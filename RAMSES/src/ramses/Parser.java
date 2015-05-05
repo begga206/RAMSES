@@ -86,7 +86,7 @@ public class Parser {
 		if(tokens.size() != SIZE_HALT && tokens.size() != SIZE_JUMP && 
 				tokens.size() != SIZE_COND_JUMP && tokens.size() != SIZE_LOAD && tokens.size() != SIZE_ARITH_INDEX)
 			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
-		//Ist der dritte Token ein '<-' ?
+		//Ist der dritte Token ein '<-' ?                TRIFFT BEI JUMP NICHT ZU, sollen wir das hinter die entsprechenden cases schreiben?
 		if(tokens.size() > 2 && !tokens.get(INDEX_ARROW).equals("<-"))
 			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
 		
@@ -203,9 +203,9 @@ public class Parser {
 		switch(tokens.get(INDEX_OPERATOR)){
 		case CASE_ADD:
 			//Überprüfen ob Speicherzugriff in Zeile stattfindet
-			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
+			if(tokens.get(INDEX_OP2.matches("s[i(.*)]"))
 					//to do
-			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
+			if(tokens.get(INDEX_OP2.matches("s[(.*)]"))
 					//to do
 			//Mit Rechenzeichen weitermachen		
 			else
@@ -219,9 +219,9 @@ public class Parser {
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
 		case CASE_SUB:
 			//Überprüfen ob Speicherzugriff in Zeile stattfindet
-			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
+			if(tokens.get(INDEX_OP2.matches("s[i(.*)]"))
 					//to do
-			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
+			if(tokens.get(INDEX_OP2.matches("s[(.*)]"))
 					//to do
 			//Mit Rechenzeichen weitermachen			
 			else
@@ -235,9 +235,9 @@ public class Parser {
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
 		case CASE_MUL:
 			//Überprüfen ob Speicherzugriff in Zeile stattfindet
-			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
+			if(tokens.get(INDEX_OP2.matches("s[i(.*)]"))
 					//to do
-			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
+			if(tokens.get(INDEX_OP2.matches("s[(.*)]"))
 					//to do
 			//Mit Rechenzeichen weitermachen		
 			else
@@ -251,9 +251,9 @@ public class Parser {
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
 		case CASE_DIV:
 			//Überprüfen ob Speicherzugriff in Zeile stattfindet
-			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
+			if(tokens.get(INDEX_OP2.matches("s[i(.*)]"))
 					//to do
-			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
+			if(tokens.get(INDEX_OP2.matches("s[(.*)]"))
 					//to do
 			//Mit Rechenzeichen weitermachen		
 			else
@@ -267,9 +267,9 @@ public class Parser {
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
 		case CASE_MOD:
 			//Überprüfen ob Speicherzugriff in Zeile stattfindet
-			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
+			if(tokens.get(INDEX_OP2.matches("s[i(.*)]"))
 					//to do
-			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
+			if(tokens.get(INDEX_OP2.matches("s[(.*)]"))
 					//to do
 			//Mit Rechenzeichen weitermachen					
 			else
@@ -286,7 +286,6 @@ public class Parser {
 	}
 	
 	private Instruction parseLoadInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
-		//TODO
 		return null;
 	}
 	
