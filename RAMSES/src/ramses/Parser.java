@@ -204,9 +204,9 @@ public class Parser {
 		switch(tokens.get(INDEX_OPERATOR)) {
 		case CASE_ADD:
 			//Überprüfen ob Speicherzugriff in Zeile stattfindet
-			if(tokens.get(INDEX_OP2.matches("s[i(.*)]")))
+			if(tokens.get(INDEX_OP2).matches("s[i(.*)]"))
 					//to do
-			if(tokens.get(INDEX_OP2.matches("s[(.*)]")))
+			if(tokens.get(INDEX_OP2).matches("s[(.*)]"))
 					//to do
 			//Mit Rechenzeichen weitermachen		
 			else {
@@ -221,9 +221,9 @@ public class Parser {
 			}	
 		case CASE_SUB:
 			//Überprüfen ob Speicherzugriff in Zeile stattfindet
-			if(tokens.get(INDEX_OP2.matches("s[i(.*)]"))
+			if(tokens.get(INDEX_OP2).matches("s[i(.*)]"))
 					//to do
-			if(tokens.get(INDEX_OP2.matches("s[(.*)]"))
+			if(tokens.get(INDEX_OP2).matches("s[(.*)]"))
 					//to do
 			//Mit Rechenzeichen weitermachen			
 			else {
@@ -238,9 +238,9 @@ public class Parser {
 			}	
 		case CASE_MUL:
 			//Überprüfen ob Speicherzugriff in Zeile stattfindet
-			if(tokens.get(INDEX_OP2.matches("s[i(.*)]"))
+			if(tokens.get(INDEX_OP2).matches("s[i(.*)]"))
 					//to do
-			if(tokens.get(INDEX_OP2.matches("s[(.*)]"))
+			if(tokens.get(INDEX_OP2).matches("s[(.*)]"))
 					//to do
 			//Mit Rechenzeichen weitermachen		
 			else {
@@ -255,9 +255,9 @@ public class Parser {
 			}	
 		case CASE_DIV:
 			//Überprüfen ob Speicherzugriff in Zeile stattfindet
-			if(tokens.get(INDEX_OP2.matches("s[i(.*)]"))
+			if(tokens.get(INDEX_OP2).matches("s[i(.*)]"))
 					//to do
-			if(tokens.get(INDEX_OP2.matches("s[(.*)]"))
+			if(tokens.get(INDEX_OP2).matches("s[(.*)]"))
 					//to dos
 			//Mit Rechenzeichen weitermachen		
 			else {
@@ -272,9 +272,9 @@ public class Parser {
 			}	
 		case CASE_MOD:
 			//Überprüfen ob Speicherzugriff in Zeile stattfindet
-			if(tokens.get(INDEX_OP2.matches("s[i(.*)]"))
+			if(tokens.get(INDEX_OP2).matches("s[i(.*)]"))
 					//to do
-			if(tokens.get(INDEX_OP2.matches("s[(.*)]"))
+			if(tokens.get(INDEX_OP2).matches("s[(.*)]"))
 					//to do
 			//Mit Rechenzeichen weitermachen					
 			else {
