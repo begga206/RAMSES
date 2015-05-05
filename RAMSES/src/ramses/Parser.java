@@ -199,12 +199,15 @@ public class Parser {
 		if(!tokens.get(INDEX_DESTINATION).equals(tokens.get(INDEX_OP1)))
 			return parseLoadInst(instPtr, instLine, tokens);
 		
+		//Überprüfen welches Rechenzeichen hinter a <- a X steht
 		switch(tokens.get(INDEX_OPERATOR)){
 		case CASE_ADD:
+			//Überprüfen ob Speicherzugriff in Zeile stattfindet
 			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
 					//to do
 			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
 					//to do
+			//Mit Rechenzeichen weitermachen		
 			else
 				p0 = tokens.get(OP1);
 				p0Token = tokens.get(OP2);
@@ -215,10 +218,12 @@ public class Parser {
 				else
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
 		case CASE_SUB:
+			//Überprüfen ob Speicherzugriff in Zeile stattfindet
 			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
 					//to do
 			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
 					//to do
+			//Mit Rechenzeichen weitermachen			
 			else
 				p0 = tokens.get(OP1);
 				p0Token = tokens.get(OP2);
@@ -229,10 +234,12 @@ public class Parser {
 				else
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
 		case CASE_MUL:
+			//Überprüfen ob Speicherzugriff in Zeile stattfindet
 			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
 					//to do
 			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
 					//to do
+			//Mit Rechenzeichen weitermachen		
 			else
 				p0 = tokens.get(OP1);
 				p0Token = tokens.get(OP2);
@@ -243,10 +250,12 @@ public class Parser {
 				else
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
 		case CASE_DIV:
+			//Überprüfen ob Speicherzugriff in Zeile stattfindet
 			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
 					//to do
 			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
 					//to do
+			//Mit Rechenzeichen weitermachen		
 			else
 				p0 = tokens.get(OP1);
 				p0Token = tokens.get(OP2);
@@ -257,10 +266,12 @@ public class Parser {
 				else
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
 		case CASE_MOD:
+			//Überprüfen ob Speicherzugriff in Zeile stattfindet
 			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
 					//to do
 			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
 					//to do
+			//Mit Rechenzeichen weitermachen					
 			else
 				p0 = tokens.get(OP1);
 				p0Token = tokens.get(OP2);
