@@ -214,7 +214,7 @@ public class Parser {
 				p0Token = tokens.get(INDEX_OP2);
 				if (p0Token.matches("[0-9]+")){
 					p1 = Integer.parseInt(p0Token);
-					return new Instruction(InstructionTag.ADD_A_IMM, p0, p1);
+					return new Instruction(InstructionTag.ADD_A_IMM, p1);
 				}	
 				else		
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(INDEX_OP2));
@@ -231,7 +231,7 @@ public class Parser {
 				p0Token = tokens.get(INDEX_OP2);
 				if (p0Token.matches("[0-9]+")){
 					p1 = Integer.parseInt(p0Token);
-					return new Instruction(InstructionTag.SUB_A_IMM, p0, p1);
+					return new Instruction(InstructionTag.SUB_A_IMM, p1);
 				}	
 				else
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(INDEX_OP2));
@@ -248,7 +248,7 @@ public class Parser {
 				p0Token = tokens.get(INDEX_OP2);
 				if (p0Token.matches("[0-9]+")){
 					p1 = Integer.parseInt(p0Token);
-					return new Instruction(InstructionTag.MUL_A_IMM, p0, p1);
+					return new Instruction(InstructionTag.MUL_A_IMM, p1);
 				}		
 				else
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(INDEX_OP2));
@@ -265,7 +265,7 @@ public class Parser {
 				p0Token = tokens.get(INDEX_OP2);
 				if (p0Token.matches("[0-9]+")){
 					p1 = Integer.parseInt(p0Token);
-					return new Instruction(InstructionTag.DIV_A_IMM, p0, p1);
+					return new Instruction(InstructionTag.DIV_A_IMM, p1);
 				}	
 				else
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(INDEX_OP2));
@@ -282,7 +282,7 @@ public class Parser {
 				p0Token = tokens.get(INDEX_OP2);
 				if (p0Token.matches("[0-9]+")){
 					p1 = Integer.parseInt(p0Token);
-					return new Instruction(InstructionTag.MOD_A_IMM, p0, p1);
+					return new Instruction(InstructionTag.MOD_A_IMM, p1);
 				}	
 				else
 					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(INDEX_OP2));
