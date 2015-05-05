@@ -6,6 +6,7 @@ package ramses;
  *
  */
 public class Instruction {
+	public static final int NOT_DEF = -2;
 	/** Tag gibt Aufschluss über den RAM Befehl */
 	private InstructionTag instTag;
 	/** Array mit Parametern für diesen RAM Befehl */
@@ -22,6 +23,13 @@ public class Instruction {
 		param = new int[]{p0, p1};
 	}
 
+	public Instruction(InstructionTag instTag, int p0){
+		this(instTag,p0,NOT_DEF);
+	}
+	
+	public Instruction(InstructionTag instTag){
+		this(instTag, NOT_DEF, NOT_DEF);
+	}
 	//---------------------Getter-----------------------------
 	public InstructionTag getInstTag() {
 		return instTag;
