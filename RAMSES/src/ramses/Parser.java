@@ -105,7 +105,7 @@ public class Parser {
 		checkInstToken = instPtrToken.replace(COLON, "");
 		
 		//Check, ob instPtrToken nur aus Ziffern besteht
-		if (checkInstToken.matches("[0-9]+") && checkInstToken.length() > 2)
+		if (checkInstToken.matches("[0-9]+"))
 			checkInstPtr = Integer.parseInt(checkInstToken);
 		else
 			throw new SyntaxErrorException(instPtr, ERROR_INSTPTR_CONTAINS_LETTER + TOKEN + instPtrToken);
@@ -148,7 +148,7 @@ public class Parser {
 		
 		//Index index bekommen
 		p0Token = p0Token.replace(CASE_INDEX, "0");
-		if (p0Token.matches("[0-9]+") && p0Token.length() > 2)
+		if (p0Token.matches("[0-9]+"))
 			p0 = Integer.parseInt(p0Token);
 		else
 			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(INDEX_DESTINATION));		
