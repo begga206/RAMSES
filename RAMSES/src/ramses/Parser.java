@@ -290,7 +290,7 @@ public class Parser {
 		default:
 			throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + TOKEN + tokens.get(INDEX_OPERATOR));	
 		}
-	}	
+	}	 
 	
 	private Instruction parseLoadInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
 		String p0Token = tokens.get(INDEX_OPERATOR);
