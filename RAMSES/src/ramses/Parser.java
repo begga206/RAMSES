@@ -39,6 +39,8 @@ public class Parser {
 	public static final String CASE_MUL = "*";
 	public static final String CASE_DIV = "div";
 	public static final String CASE_MOD = "mod";
+	public static final String CASE_THEN = "then";
+	public static final String CASE_NULL = "0";
 	
 	//INDEXES//
 	public static final int INDEX_INST_PTR = 0;
@@ -51,7 +53,12 @@ public class Parser {
 	//JUMPS//
 	public static final int SIMPLE_JUMP_IDENT = 2;
 	public static final int SIMPLE_JUMP_DEST = 3;
+	public static final int COND_JUMP_IF = 2;
+	public static final int COND_JUMP_AKKU = 3;	
 	public static final int COND_JUMP_IDENT = 4;
+	public static final int COND_JUMP_NULL = 5;
+	public static final int COND_JUMP_THEN = 6;
+	public static final int COND_JUMP_JUMP = 7;
 	public static final int COND_JUMP_DEST = 8;
 	public static final String CASE_GLEICH = "=";
 	public static final String CASE_GROESSERGLEICH = ">=";
@@ -145,9 +152,23 @@ public class Parser {
 	}
 	
 	private Instruction parseCondJump(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
+		if(tokens.size() != SIZE_COND_JUMP)
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
+		if(tokens.get(COND_JUMP_IF) != CASE_COND_JUMP)
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(COND_JUMP_IF));
+		if(tokens.get(COND_JUMP_AKKU) != CASE_AKKU)
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(COND_JUMP_AKKU));
+		if(tokens.get(COND_JUMP_NULL) != CASE_NULL)
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(COND_JUMP_NULL));
+		if(tokens.get(COND_JUMP_THEN) != CASE_THEN)
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(COND_JUMP_THEN));
+		if(tokens.get(COND_JUMP_JUMP) != CASE_JUMP)
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(COND_JUMP_JUMP));
+		
 		String p0Token = tokens.get(COND_JUMP_DEST);
 		int p0;
 		p0 = Integer.parseInt(p0Token);
+		
 		switch(tokens.get(COND_JUMP_IDENT)){
 		case CASE_GLEICH:
 			return new Instruction(InstructionTag.JUMP_EQ, p0);
@@ -162,7 +183,7 @@ public class Parser {
 		case CASE_UNGLEICH:
 			return new Instruction(InstructionTag.JUMP_NE, p0);
 		default:
-			throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + tokens.get(COND_JUMP_IDENT)); 
+			throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + TOKEN + tokens.get(COND_JUMP_IDENT)); 
 	}
 	
 	private Instruction parseArithInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
