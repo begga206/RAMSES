@@ -188,7 +188,8 @@ public class Parser {
 	
 	private Instruction parseArithInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
 		String p0Token = tokens.get(INDEX_DESTINATION);
-		int p0, p1;
+		//string p0;   Akku als "a" an weitere Funktionen weitergeben und dort den aktuellen Akku auslesen? 
+		int p1;
 		
 		//Ist die Länge des Befehls ok
 		if(tokens.size() != SIZE_ARITH_INDEX)
@@ -198,6 +199,79 @@ public class Parser {
 		if(!tokens.get(INDEX_DESTINATION).equals(tokens.get(INDEX_OP1)))
 			return parseLoadInst(instPtr, instLine, tokens);
 		
+		switch(tokens.get(INDEX_OPERATOR)){
+		case CASE_ADD:
+			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
+					//to do
+			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
+					//to do
+			else
+				p0 = tokens.get(OP1);
+				p0Token = tokens.get(OP2);
+				if (p0Token.matches("[0-9]+")){
+					p1 = Integer.parseInt(p0Token);
+					return new Instruction(InstructionTag.ADD_A_IMM, p0, p1);
+				}	
+				else
+					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
+		case CASE_SUB:
+			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
+					//to do
+			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
+					//to do
+			else
+				p0 = tokens.get(OP1);
+				p0Token = tokens.get(OP2);
+				if (p0Token.matches("[0-9]+")){
+					p1 = Integer.parseInt(p0Token);
+					return new Instruction(InstructionTag.SUB_A_IMM, p0, p1);
+				}	
+				else
+					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
+		case CASE_MUL:
+			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
+					//to do
+			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
+					//to do
+			else
+				p0 = tokens.get(OP1);
+				p0Token = tokens.get(OP2);
+				if (p0Token.matches("[0-9]+")){
+					p1 = Integer.parseInt(p0Token);
+					return new Instruction(InstructionTag.MUL_A_IMM, p0, p1);
+				}	
+				else
+					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
+		case CASE_DIV:
+			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
+					//to do
+			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
+					//to do
+			else
+				p0 = tokens.get(OP1);
+				p0Token = tokens.get(OP2);
+				if (p0Token.matches("[0-9]+")){
+					p1 = Integer.parseInt(p0Token);
+					return new Instruction(InstructionTag.DIV_A_IMM, p0, p1);
+				}	
+				else
+					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
+		case CASE_MOD:
+			if(tokens.get(INDEX_OP2.matches("s[i(.*)"))
+					//to do
+			if(tokens.get(INDEX_OP2.matches("s[(.*)"))
+					//to do
+			else
+				p0 = tokens.get(OP1);
+				p0Token = tokens.get(OP2);
+				if (p0Token.matches("[0-9]+")){
+					p1 = Integer.parseInt(p0Token);
+					return new Instruction(InstructionTag.MOD_A_IMM, p0, p1);
+				}
+				else
+					throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(OP2));
+		default:
+			throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + TOKEN + tokens.get(INDEX_OPERATOR));	
 	}
 	
 	private Instruction parseLoadInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
