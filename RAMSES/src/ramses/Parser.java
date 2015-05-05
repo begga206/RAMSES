@@ -204,6 +204,9 @@ public class Parser {
 		if(!tokens.get(INDEX_DESTINATION).equals(tokens.get(INDEX_OP1)))
 			return parseLoadInst(instLine, tokens);
 		
+		
+	}
+		
 	private Instruction parseLoadInst(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
 		String p0Token = tokens.get(INDEX_OPERATOR);
 		int p0;
@@ -255,22 +258,27 @@ public class Parser {
 		}
 	}
 	
-	private int parseOperand(String token) throws SyntaxErrorException{
-		if(token.matches("a"))
-			return -1;
-		if(token.matches("[0-9]+"))
-			return Integer.parseInt(token);
+	private int[] parseOperand(String token) throws SyntaxErrorException{
+		int[] ops = new int[2];
+		if(token.matches("a")){
+			ops[0] = -1;
+			return ops;
+		}
+		if(token.matches("[0-9]+")){
+			ops[0] = Integer.parseInt(token);
+			return ops;
+		}
 		if(token.matches("s\\[i[0-9]*\\+*[0-9]*\\]")){
 			token = token.replaceAll("s\\[i(.*)\\]", "0$1");
 			String[] s = token.split("\\+");
-			int p = Integer.parseInt(s[0]);
+			ops[0] = Integer.parseInt(s[0]);
 			if(s.length == 2)
-				p += Integer.parseInt(s[1]);
-			return p;
+				ops[1] = Integer.parseInt(s[1]);
+			return ops;
 		}
 		if(token.matches("s\\[[0-9]+\\]")){
 			token = token.replaceAll("s\\[(.*)\\]", "$1");
-			return Integer.parseInt(token);
+			ops[0] = Integer.parseInt(token);
 		}
 		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + token);
 	}
