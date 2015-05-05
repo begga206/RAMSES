@@ -162,7 +162,7 @@ public class Parser {
 		case CASE_UNGLEICH:
 			return new Instruction(InstructionTag.JUMP_NE, p0);
 		default:
-			throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + tokens.get(COND_JUMP_IDENT));
+			throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + tokens.get(COND_JUMP_IDENT)); 
 	}
 	
 	private Instruction parseArithInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
