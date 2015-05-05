@@ -125,6 +125,7 @@ public class Parser {
 		String p0Token = tokens.get(SIMPLE_JUMP_IDENT);
 		if (p0Token.equals(CASE_JUMP))
 			p0Token = tokens.get(SIMPLE_JUMP_DEST);
+			p0 = Integer.parseInt(p0Token);
 			return new Instruction(InstructionTag.JUMP, p0);
 		else
 			throw new SyntaxErrorException(instPtr, ERROR_WRONG_INSPTR + "was expecting 'jump', got " + p0tToken);
