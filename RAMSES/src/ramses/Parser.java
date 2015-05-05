@@ -255,7 +255,7 @@ public class Parser {
 			if(tokens.get(INDEX_OP2.matches("s[i(.*)]"))
 					//to do
 			if(tokens.get(INDEX_OP2.matches("s[(.*)]"))
-					//to do
+					//to dos
 			//Mit Rechenzeichen weitermachen		
 			else
 				p0 = tokens.get(OP1);
