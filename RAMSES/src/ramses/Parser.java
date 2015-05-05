@@ -286,7 +286,12 @@ public class Parser {
 	}
 	
 	private Instruction parseLoadInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
-		return null;
+		if(tokens.get(INDEX_DESTINATION).contains(CASE_INDEX))
+			//to do
+		if(tokens.get(INDEX_DESTINATION).contains(CASE_MEM))
+			//to do
+		else
+			
 	}
 	
 	private Instruction parseIndexInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
