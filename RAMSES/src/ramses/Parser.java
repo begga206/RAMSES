@@ -48,6 +48,14 @@ public class Parser {
 	//JUMPS//
 	public static final int SIMPLE_JUMP_IDENT = 2;
 	public static final int SIMPLE_JUMP_DEST = 3;
+	public static final int COND_JUMP_IDENT = 4;
+	public static final int COND_JUMP_DEST = 8;
+	public static final String CASE_GLEICH = "=";
+	public static final String CASE_GROESSERGLEICH = ">=";
+	public static final String CASE_GROESSER = ">";
+	public static final String CASE_KLEINERGLEICH = "<=";
+	public static final String CASE_KLEINER = "<";
+	public static final String CASE_UNGLEICH = "!=";
 	
 	/**
 	 * Hauptfunktion zum Parsen der Befehlszeile
@@ -129,13 +137,28 @@ public class Parser {
 			p0 = Integer.parseInt(p0Token);
 			return new Instruction(InstructionTag.JUMP, p0);
 		else
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_INSPTR + "was expecting 'jump', got " + p0tToken);
-		return null;
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_INSPTR + "was expecting 'jump', got " + p0Token);
 	}
 	
 	private Instruction parseCondJump(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
-		//TODO
-		return null;
+		String p0Token = tokens.get(COND_JUMP_DEST);
+		int p0;
+		p0 = Integer.parseInt(p0Token);
+		switch(tokens.get(COND_JUMP_IDENT)){
+		case CASE_GLEICH:
+			return new Instruction(InstructionTag.JUMP_EQ, p0);
+		case CASE_GROESSERGLEICH:
+			return new Instruction(InstructionTag.JUMP_GE, p0);
+		case CASE_GROESSER:
+			return new Instruction(InstructionTag.JUMP_GT, p0);
+		case CASE_KLEINERGLEICH:
+			return new Instruction(InstructionTag.JUMP_LE, p0);
+		case CASE_KLEINER:
+			return new Instruction(InstructionTag.JUMP_LT, p0);
+		case CASE_UNGLEICH:
+			return new Instruction(InstructionTag.JUMP_NE, p0);
+		default:
+			throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + tokens.get(COND_JUMP_IDENT));
 	}
 	
 	private Instruction parseArithInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
