@@ -123,6 +123,7 @@ public class Parser {
 	
 	private Instruction parseJump(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
 		String p0Token = tokens.get(SIMPLE_JUMP_IDENT);
+		int p0;
 		if (p0Token.equals(CASE_JUMP))
 			p0Token = tokens.get(SIMPLE_JUMP_DEST);
 			p0 = Integer.parseInt(p0Token);
