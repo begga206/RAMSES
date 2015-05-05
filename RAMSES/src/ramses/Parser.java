@@ -36,6 +36,9 @@ public class Parser {
 	public static final String CASE_INDEX = "i";
 	public static final String CASE_ADD = "+";
 	public static final String CASE_SUB = "-";
+	public static final String CASE_MUL = "*";
+	public static final String CASE_DIV = "div";
+	public static final String CASE_MOD = "mod";
 	
 	//INDEXES//
 	public static final int INDEX_INST_PTR = 0;
@@ -124,13 +127,13 @@ public class Parser {
 	private Instruction parseJump(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
 		String p0Token = tokens.get(SIMPLE_JUMP_IDENT);
 		int p0;
-		if (p0Token.equals(CASE_JUMP))
+		if (p0Token.equals(CASE_JUMP)){
 			p0Token = tokens.get(SIMPLE_JUMP_DEST);
 			p0 = Integer.parseInt(p0Token);
 			return new Instruction(InstructionTag.JUMP, p0);
+		}
 		else
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_INSPTR + "was expecting 'jump', got " + p0tToken);
-		return null;
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_INSPTR + "was expecting 'jump', got " + p0Token);
 	}
 	
 	private Instruction parseCondJump(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
@@ -139,8 +142,17 @@ public class Parser {
 	}
 	
 	private Instruction parseArithInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
-		//TODO
-		return null;
+		String p0Token = tokens.get(INDEX_DESTINATION);
+		int p0, p1;
+		
+		//Ist die Länge des Befehls ok
+		if(tokens.size() != SIZE_ARITH_INDEX)
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
+		
+		//Es handelt sich nur um eine Indexanweisung, wenn a <- a
+		if(!tokens.get(INDEX_DESTINATION).equals(tokens.get(INDEX_OP1)))
+			return parseLoadInst(instPtr, instLine, tokens);
+		
 	}
 	
 	private Instruction parseLoadInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
@@ -151,6 +163,10 @@ public class Parser {
 	private Instruction parseIndexInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
 		String p0Token = tokens.get(INDEX_DESTINATION);
 		int p0;
+		
+		//Ist die Länge des Befehls ok
+		if(tokens.size() != SIZE_ARITH_INDEX)
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
 		//Es handelt sich nur um eine Indexanweisung, wenn i <- i
 		if(!tokens.get(INDEX_DESTINATION).equals(tokens.get(INDEX_OP1)))
 			return parseLoadInst(instPtr, instLine, tokens);
