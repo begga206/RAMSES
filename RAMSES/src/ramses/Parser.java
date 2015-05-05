@@ -293,11 +293,23 @@ public class Parser {
 	}	
 	
 	private Instruction parseLoadInst(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
+		String p0Token = tokens.get(INDEX_OPERATOR);
+		int p0;
 		if(tokens.get(INDEX_DESTINATION).contains(CASE_INDEX))
 			//to do
 		if(tokens.get(INDEX_DESTINATION).contains(CASE_MEM))
 			//to do
-		//else
+		else{
+			if(tokens.get(INDEX_OPERATOR).matches("s(.*)"))
+				//to do zahl aus klammer lesen
+				return new Instruction(InstructionTag.LD_A_MMEM, p0);
+			if(tokens.get(INDEX_OPERATOR).matches("[0-9]+")){
+				p0 = Integer.parseInt(p0Token);
+				return new Instruction(InstructionTag.LD_REG_IMM, p0);
+			}	
+			else
+				throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(INDEX_OPERATOR));
+		}
 			
 	}
 	
