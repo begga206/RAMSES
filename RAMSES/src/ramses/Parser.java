@@ -207,15 +207,28 @@ public class Parser {
 
 	private Instruction parseLoadInst(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
 		String p0Token = tokens.get(INDEX_OPERATOR);
+		int[]helparray = new int [2];
 		int p0;
+		int p1;
 		if(tokens.get(INDEX_DESTINATION).contains(CASE_INDEX))
 			//to do
-		if(tokens.get(INDEX_DESTINATION).contains(CASE_MEM))
-			//to do
+		if(tokens.get(INDEX_DESTINATION).contains(CASE_MEM)){
+			if(tokens.get(INDEX_DESTINATION).contains(CASE_INDEX)){
+				helparray = parseOperand(p0Token);
+				p0=helparray[0];
+				return new Instruction(InstructionTag.LD_MMEM_A, p0);
+				
+			}
+		}
 		else{
-			if(tokens.get(INDEX_OPERATOR).matches("s(.*)"))
-				int p0 = 
-				return new Instruction(InstructionTag.LD_A_MMEM, p0);
+			if(tokens.get(INDEX_OPERATOR).matches("s(.*)")){
+				helparray = parseOperand(p0Token);
+				p0=helparray[0];
+				p1=helparray[1];
+				return new Instruction(InstructionTag.LD_A_MMEM, p0, p1);
+			}	
+			else
+				throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(INDEX_OPERATOR));
 			if(tokens.get(INDEX_OPERATOR).matches("[0-9]+")){
 				p0 = Integer.parseInt(p0Token);
 				return new Instruction(InstructionTag.LD_REG_IMM, p0);
