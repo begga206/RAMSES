@@ -267,7 +267,7 @@ public class Parser {
 			int p = Integer.parseInt(s[0]);
 			if(s.length == 2)
 				p += Integer.parseInt(s[1]);
-			return p;
+			return p; 
 		}
 		if(token.matches("s\\[[0-9]+\\]")){
 			token = token.replaceAll("s\\[(.*)\\]", "$1");
