@@ -45,6 +45,10 @@ public class Parser {
 	public static final int INDEX_OPERATOR = 4;
 	public static final int INDEX_OP2 = 5;
 	
+	//JUMPS//
+	public static final int SIMPLE_JUMP_IDENT = 2;
+	public static final int SIMPLE_JUMP_DEST = 3;
+	
 	/**
 	 * Hauptfunktion zum Parsen der Befehlszeile
 	 * @param instPtr
@@ -118,7 +122,14 @@ public class Parser {
 	}
 	
 	private Instruction parseJump(int instPtr, String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
-		//TODO
+		String p0Token = tokens.get(SIMPLE_JUMP_IDENT);
+		int p0;
+		if (p0Token.equals(CASE_JUMP))
+			p0Token = tokens.get(SIMPLE_JUMP_DEST);
+			p0 = Integer.parseInt(p0Token);
+			return new Instruction(InstructionTag.JUMP, p0);
+		else
+			throw new SyntaxErrorException(instPtr, ERROR_WRONG_INSPTR + "was expecting 'jump', got " + p0tToken);
 		return null;
 	}
 	
