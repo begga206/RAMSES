@@ -203,6 +203,7 @@ public class Parser {
 		//Es handelt sich nur um eine Indexanweisung, wenn a <- a
 		if(!tokens.get(INDEX_DESTINATION).equals(tokens.get(INDEX_OP1)))
 			return parseLoadInst(instLine, tokens);
+	}	
 		
 	private Instruction parseLoadInst(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
 		String p0Token = tokens.get(INDEX_OPERATOR);
@@ -213,7 +214,7 @@ public class Parser {
 			//to do
 		else{
 			if(tokens.get(INDEX_OPERATOR).matches("s(.*)"))
-				//to do zahl aus klammer lesen
+				int p0 = 
 				return new Instruction(InstructionTag.LD_A_MMEM, p0);
 			if(tokens.get(INDEX_OPERATOR).matches("[0-9]+")){
 				p0 = Integer.parseInt(p0Token);
