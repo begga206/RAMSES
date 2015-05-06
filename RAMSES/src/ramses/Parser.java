@@ -215,7 +215,7 @@ public class Parser {
 			return new Instruction(InstructionTag.LD_MEM_REG,p[0],p[1]);
 		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
 	}
-	
+
 	/**
 	 * Parsfunktion, wenn die Befehlszeile ein Indexbefehl ist
 	 * @param instLine
