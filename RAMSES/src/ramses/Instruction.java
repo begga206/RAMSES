@@ -30,6 +30,10 @@ public class Instruction {
 	public Instruction(InstructionTag instTag){
 		this(instTag, NOT_DEF, NOT_DEF);
 	}
+	
+	public String toString(){
+		return instTag.toString() + " | " + param[0] + " | " + param[1];
+	}
 	//---------------------Getter-----------------------------
 	public InstructionTag getInstTag() {
 		return instTag;

@@ -19,13 +19,6 @@ public class Parser {
 	public static final String ERROR_WRONG_INSPTR = "Given Instruction Pointer was not expected";
 	public static final String ERROR_WRONG_FORMAT = "The line does not match with any known format";
 	public static final String ERROR_INVALID_OPERATOR = "The operator is invalid";
-	
-	//INSTRUCTION SIZES//
-	public static final int SIZE_HALT = 2;
-	public static final int SIZE_JUMP = 3;
-	public static final int SIZE_LOAD = 4;
-	public static final int SIZE_ARITH_INDEX = 6;
-	public static final int SIZE_COND_JUMP = 8;
 
 	//CASES//
 	public static final String CASE_HALT = "HALT";
@@ -41,6 +34,12 @@ public class Parser {
 	public static final String CASE_MOD = "mod";
 	public static final String CASE_THEN = "then";
 	public static final String CASE_NULL = "0";
+	public static final String CASE_EQ = "=";
+	public static final String CASE_GE = ">=";
+	public static final String CASE_GT = ">";
+	public static final String CASE_LE = "<=";
+	public static final String CASE_LT = "<";
+	public static final String CASE_NE = "!=";
 	
 	//INDEXES//
 	public static final int INDEX_INST_PTR = 0;
@@ -49,23 +48,23 @@ public class Parser {
 	public static final int INDEX_OP1 = 3;
 	public static final int INDEX_OPERATOR = 4;
 	public static final int INDEX_OP2 = 5;
+	public static final int INDEX_JUMP_DEST = 2;
+	public static final int INDEX_COND_JUMP_IDENT = 3;
+	public static final int INDEX_COND_JUMP_DEST = 7;
 	
-	//JUMPS//
-	public static final int SIMPLE_JUMP_IDENT = 2;
-	public static final int SIMPLE_JUMP_DEST = 3;
-	public static final int COND_JUMP_IF = 2;
-	public static final int COND_JUMP_AKKU = 3;	
-	public static final int COND_JUMP_IDENT = 4;
-	public static final int COND_JUMP_NULL = 5;
-	public static final int COND_JUMP_THEN = 6;
-	public static final int COND_JUMP_JUMP = 7;
-	public static final int COND_JUMP_DEST = 8;
-	public static final String CASE_GLEICH = "=";
-	public static final String CASE_GROESSERGLEICH = ">=";
-	public static final String CASE_GROESSER = ">";
-	public static final String CASE_KLEINERGLEICH = "<=";
-	public static final String CASE_KLEINER = "<";
-	public static final String CASE_UNGLEICH = "!=";
+	//PATTERN//
+	public static final String PATTERN_LOAD_INST = "\\d+: (a|i\\d*|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]) <- (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]|a|i\\d*)";
+	public static final String PATTERN_JUMP_INST = "\\d+: jump \\d+";
+	public static final String PATTERN_COND_JUMP_INST = "\\d+: if (a|i\\d*) (=|!=|<=|>=|<|>) 0 then jump \\d+";
+	public static final String PATTERN_ARITH_INST = "\\d+: a <- a (\\+|\\-|\\*|div|mod) (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])";
+	public static final String PATTERN_HALT_INST = "\\d+: HALT";
+	public static final String PATTERN_INDEX_INST = "\\d+: i\\d* <- i\\d* (\\+|\\-) 1";
+	public static final String PATTERN_AKKU = "a";
+	public static final String PATTERN_IMM = "[0-9]+";
+	public static final String PATTERN_INDEX = "i[0-9]*";
+	public static final String PATTERN_MEM = "s\\[[0-9]+\\]";
+	public static final String PATTERN_MMEM = "s\\[i[0-9]*\\+*[0-9]*\\]";
+	public static final String PATTERN_REG = "(a|i\\d*)";
 	
 	
 	private static int instPtr;
@@ -77,174 +76,159 @@ public class Parser {
 	 * @return
 	 * @throws SyntaxErrorException 
 	 */
-	public Instruction parseInst(int instPtr, String instLine) throws SyntaxErrorException{
+	public static Instruction parseInst(int instPtr, String instLine) throws SyntaxErrorException{
 		Parser.instPtr = instPtr;
 		ArrayList<String> tokens = new ArrayList<>();
-		
-		try(Scanner scanner = new Scanner(instLine)){
-			while(scanner.hasNext()){
-				tokens.add(scanner.next());
-			}
+		Scanner scanner = new Scanner(instLine);
+		while(scanner.hasNext()){
+			tokens.add(scanner.next());
 		}
-		//Entspricht Befehl regulärer Befehlsgröße?
-		if(tokens.size() != SIZE_HALT && tokens.size() != SIZE_JUMP && 
-				tokens.size() != SIZE_COND_JUMP && tokens.size() != SIZE_LOAD && tokens.size() != SIZE_ARITH_INDEX)
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
-		//Ist der dritte Token ein '<-' ?                TRIFFT BEI JUMP NICHT ZU, sollen wir das hinter die entsprechenden cases schreiben?
-		if(tokens.size() > 2 && !tokens.get(INDEX_ARROW).equals("<-"))
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
+		scanner.close();
 		
-		validateInstPtr(tokens.get(INDEX_INST_PTR));	//validieren, dass der angegebene IP mit dem internen übereinstimmt
-
-		switch(tokens.get(INDEX_DESTINATION)){	//Kategorisiere ersten Befehlstoken
-			case CASE_HALT:
-				return new Instruction(InstructionTag.HALT);
-			case CASE_JUMP:
-				return parseJump(instLine, tokens);
-			case CASE_COND_JUMP:
-				return parseCondJump(instLine, tokens);
-			case CASE_AKKU:
-				return parseArithInst(instLine, tokens);
-			default: //Load und Index müssen so gelöst werden, weil sie indexiert sind
-				if(tokens.get(INDEX_DESTINATION).contains(CASE_MEM))
-					return parseLoadInst(instLine, tokens);
-				if(tokens.get(INDEX_DESTINATION).contains(CASE_INDEX))
-					return parseIndexInst(instLine, tokens);
-				throw new SyntaxErrorException(instPtr, ERROR_INST_UNKNOWN + tokens.get(INDEX_DESTINATION));
+		if(instLine.matches(PATTERN_LOAD_INST))
+			return parseLoadInst(instLine, tokens);
+		if(instLine.matches(PATTERN_JUMP_INST))
+			return new Instruction(InstructionTag.JUMP, Integer.parseInt(tokens.get(INDEX_JUMP_DEST)));
+		if(instLine.matches(PATTERN_COND_JUMP_INST))
+			return parseCondJump(instLine, tokens);
+		if(instLine.matches(PATTERN_ARITH_INST))
+			return parseArithInst(instLine, tokens);
+		if(instLine.matches(PATTERN_HALT_INST))
+			return new Instruction(InstructionTag.HALT);
+		if(instLine.matches(PATTERN_INDEX_INST))
+			return parseIndexInst(instLine, tokens);
+		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
+	}
+	
+	/**
+	 * Parsfunktion, wenn Befehlszeile ein bedingter Sprung ist
+	 * @param instLine
+	 * @param tokens
+	 * @return
+	 * @throws SyntaxErrorException
+	 */
+	private static Instruction parseCondJump(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
+		int p0;
+		p0 = Integer.parseInt(tokens.get(INDEX_COND_JUMP_DEST));
+		
+		switch(tokens.get(INDEX_COND_JUMP_IDENT)){
+			case CASE_EQ:
+				return new Instruction(InstructionTag.JUMP_EQ, p0);
+			case CASE_GE:
+				return new Instruction(InstructionTag.JUMP_GE, p0);
+			case CASE_GT:
+				return new Instruction(InstructionTag.JUMP_GT, p0);
+			case CASE_LE:
+				return new Instruction(InstructionTag.JUMP_LE, p0);
+			case CASE_LT:
+				return new Instruction(InstructionTag.JUMP_LT, p0);
+			case CASE_NE:
+				return new Instruction(InstructionTag.JUMP_NE, p0);
+			default:
+				throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + tokens.get(INDEX_COND_JUMP_IDENT)); 
 		}
 	}
 	
 	/**
-	 * Funktion zum Validieren des Befehlscounter.
-	 * Wenn die Funktion keine Exception wirft, ist der Befehlscounter korrekt.
-	 * @param instPtr
+	 * Parsfunktion, wenn die Befehlszeile ein Arithmetikbefehl ist
+	 * @param instLine
+	 * @param tokens
+	 * @return
 	 * @throws SyntaxErrorException
 	 */
-	private static void validateInstPtr(String instPtrToken) throws SyntaxErrorException{
-		int checkInstPtr;
-		String checkInstToken;
-		
-		//Check, ob Format == "Zahl:"
-		if(!instPtrToken.contains(COLON))
-			throw new SyntaxErrorException(instPtr, ERROR_EXCPECTED_COLON + TOKEN + instPtrToken);
-
-		checkInstToken = instPtrToken.replace(COLON, "");
-		
-		//Check, ob instPtrToken nur aus Ziffern besteht
-		if (checkInstToken.matches("[0-9]+"))
-			checkInstPtr = Integer.parseInt(checkInstToken);
-		else
-			throw new SyntaxErrorException(instPtr, ERROR_INSTPTR_CONTAINS_LETTER + TOKEN + instPtrToken);
-		
-		//Check, ob eingetragener instPtr dem internen instPtr entspricht
-		if(checkInstPtr != instPtr)
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_INSPTR + TOKEN + instPtrToken);
-
-		return;
-	}
-	
-	private Instruction parseJump(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
-		String p0Token = tokens.get(SIMPLE_JUMP_IDENT);
-		int p0;
-		if (p0Token.equals(CASE_JUMP)){
-			p0Token = tokens.get(SIMPLE_JUMP_DEST);
-			p0 = Integer.parseInt(p0Token);
-			return new Instruction(InstructionTag.JUMP, p0);
+	private static Instruction parseArithInst(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
+		int[] p = new int[2];
+		if(tokens.get(INDEX_OP2).matches(PATTERN_MMEM)){
+			p = parseMMEM(tokens.get(INDEX_OP2));
+			switch(tokens.get(INDEX_OPERATOR)){
+				case CASE_ADD:
+					return new Instruction(InstructionTag.ADD_A_MMEM,p[0],p[1]);
+				case CASE_SUB:
+					return new Instruction(InstructionTag.SUB_A_MMEM,p[0],p[1]);
+				case CASE_MUL:
+					return new Instruction(InstructionTag.MUL_A_MMEM,p[0],p[1]);
+				case CASE_DIV:
+					return new Instruction(InstructionTag.DIV_A_MMEM,p[0],p[1]);
+				case CASE_MOD:
+					return new Instruction(InstructionTag.MOD_A_MMEM,p[0],p[1]);
+			}
 		}
-		else
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_INSPTR + "was expecting 'jump', got " + p0Token);
-	}
-	
-	private Instruction parseCondJump(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
-		if(tokens.size() != SIZE_COND_JUMP)
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
-		if(tokens.get(COND_JUMP_IF) != CASE_COND_JUMP)
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(COND_JUMP_IF));
-		if(tokens.get(COND_JUMP_AKKU) != CASE_AKKU)
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(COND_JUMP_AKKU));
-		if(tokens.get(COND_JUMP_NULL) != CASE_NULL)
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(COND_JUMP_NULL));
-		if(tokens.get(COND_JUMP_THEN) != CASE_THEN)
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(COND_JUMP_THEN));
-		if(tokens.get(COND_JUMP_JUMP) != CASE_JUMP)
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(COND_JUMP_JUMP));
-		
-		String p0Token = tokens.get(COND_JUMP_DEST);
-		int p0;
-		p0 = Integer.parseInt(p0Token);
-		
-		switch(tokens.get(COND_JUMP_IDENT)){
-		case CASE_GLEICH:
-			return new Instruction(InstructionTag.JUMP_EQ, p0);
-		case CASE_GROESSERGLEICH:
-			return new Instruction(InstructionTag.JUMP_GE, p0);
-		case CASE_GROESSER:
-			return new Instruction(InstructionTag.JUMP_GT, p0);
-		case CASE_KLEINERGLEICH:
-			return new Instruction(InstructionTag.JUMP_LE, p0);
-		case CASE_KLEINER:
-			return new Instruction(InstructionTag.JUMP_LT, p0);
-		case CASE_UNGLEICH:
-			return new Instruction(InstructionTag.JUMP_NE, p0);
-		default:
-			throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + tokens.get(COND_JUMP_IDENT)); 
+		p[0] = parseOperand(tokens.get(INDEX_OP2));
+		if(tokens.get(INDEX_OP2).matches(PATTERN_MEM)){
+			switch(tokens.get(INDEX_OPERATOR)){
+				case CASE_ADD:
+					return new Instruction(InstructionTag.ADD_A_MEM,p[0]);
+				case CASE_SUB:
+					return new Instruction(InstructionTag.SUB_A_MEM,p[0]);
+				case CASE_MUL:
+					return new Instruction(InstructionTag.MUL_A_MEM,p[0]);
+				case CASE_DIV:
+					return new Instruction(InstructionTag.DIV_A_MEM,p[0]);
+				case CASE_MOD:
+					return new Instruction(InstructionTag.MOD_A_MEM,p[0]);
+			}
 		}
-	}
-	
-	private Instruction parseArithInst(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
-		String p0Token = tokens.get(INDEX_DESTINATION);
-		String p0;   //Akku als "a" an weitere Funktionen weitergeben und dort den aktuellen Akku auslesen? 
-		int p1;
-		
-		//Ist die Länge des Befehls ok
-		if(tokens.size() != SIZE_ARITH_INDEX)
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
-		
-		//Es handelt sich nur um eine Indexanweisung, wenn a <- a
-		if(!tokens.get(INDEX_DESTINATION).equals(tokens.get(INDEX_OP1)))
-			return parseLoadInst(instLine, tokens);		
+		if(tokens.get(INDEX_OP2).matches(PATTERN_IMM)){
+			switch(tokens.get(INDEX_OPERATOR)){
+				case CASE_ADD:
+					return new Instruction(InstructionTag.ADD_A_IMM,p[0]);
+				case CASE_SUB:
+					return new Instruction(InstructionTag.SUB_A_IMM,p[0]);
+				case CASE_MUL:
+					return new Instruction(InstructionTag.MUL_A_IMM,p[0]);
+				case CASE_DIV:
+					return new Instruction(InstructionTag.DIV_A_IMM,p[0]);
+				case CASE_MOD:
+					return new Instruction(InstructionTag.MOD_A_IMM,p[0]);
+			}
+		}
+		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
 	}
 
-	private Instruction parseLoadInst(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
-		String p0Token = tokens.get(INDEX_OPERATOR);
-		int p0;
-		if(tokens.get(INDEX_DESTINATION).contains(CASE_INDEX))
-			//to do
-		if(tokens.get(INDEX_DESTINATION).contains(CASE_MEM))
-			//to do
-		else{
-			if(tokens.get(INDEX_OPERATOR).matches("s(.*)"))
-				int p0 = 
-				return new Instruction(InstructionTag.LD_A_MMEM, p0);
-			if(tokens.get(INDEX_OPERATOR).matches("[0-9]+")){
-				p0 = Integer.parseInt(p0Token);
-				return new Instruction(InstructionTag.LD_REG_IMM, p0);
-			}	
-			else
-				throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(INDEX_OPERATOR));
+	/**
+	 * Parsfunktion, wenn die Befehlszeile ein Transportbefehl ist
+	 * @param instLine
+	 * @param tokens
+	 * @return
+	 * @throws SyntaxErrorException
+	 */
+	private static Instruction parseLoadInst(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
+		String dest = tokens.get(INDEX_DESTINATION);
+		String op1 = tokens.get(INDEX_OP1);
+		int[] p = new int[2];
+		
+		if(dest.matches(PATTERN_AKKU) && op1.matches(PATTERN_MMEM)){
+			p = parseMMEM(op1);
+			return new Instruction(InstructionTag.LD_A_MMEM,p[0],p[1]);
 		}
-			
+		if(dest.matches(PATTERN_MMEM) && op1.matches(PATTERN_AKKU)){
+			p = parseMMEM(dest);
+			return new Instruction(InstructionTag.LD_A_MMEM,p[0],p[1]);
+		}
+		p[0] = parseOperand(dest);
+		p[1] = parseOperand(op1);
+		if(dest.matches(PATTERN_REG) && op1.matches(PATTERN_IMM))
+			return new Instruction(InstructionTag.LD_REG_IMM,p[0],p[1]);
+		if(dest.matches(PATTERN_REG) && op1.matches(PATTERN_MEM))
+			return new Instruction(InstructionTag.LD_REG_MEM,p[0],p[1]);
+		if(dest.matches(PATTERN_MEM) && op1.matches(PATTERN_REG))
+			return new Instruction(InstructionTag.LD_MEM_REG,p[0],p[1]);
+		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
 	}
 	
-	private Instruction parseIndexInst(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
+	/**
+	 * Parsfunktion, wenn die Befehlszeile ein Indexbefehl ist
+	 * @param instLine
+	 * @param tokens
+	 * @return
+	 * @throws SyntaxErrorException
+	 */
+	private static Instruction parseIndexInst(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
 		String p0Token = tokens.get(INDEX_DESTINATION);
 		int p0;
-		
-		//Ist die Länge des Befehls ok
-		if(tokens.size() != SIZE_ARITH_INDEX)
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
-		//Es handelt sich nur um eine Indexanweisung, wenn i <- i
-		if(!tokens.get(INDEX_DESTINATION).equals(tokens.get(INDEX_OP1)))
-			return parseLoadInst(instLine, tokens);
-		if(!tokens.get(INDEX_OP2).equals("1"))
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + "was expecting 1, got " + tokens.get(INDEX_OP2));
-		
 		//Index index bekommen
 		p0Token = p0Token.replace(CASE_INDEX, "0");
-		if (p0Token.matches("[0-9]+"))
-			p0 = Integer.parseInt(p0Token);
-		else
-			throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + tokens.get(INDEX_DESTINATION));		
+		p0 = Integer.parseInt(p0Token);		
 		
 		switch(tokens.get(INDEX_OPERATOR)){
 			case CASE_ADD:
@@ -256,17 +240,15 @@ public class Parser {
 		}
 	}
 	
-	private int[] parseOperand(String token) throws SyntaxErrorException{
+	/**
+	 * Parsfunktion zum parsen eines modifizierten Speichers
+	 * @param token
+	 * @return
+	 * @throws SyntaxErrorException
+	 */
+	private static int[] parseMMEM(String token) throws SyntaxErrorException{
 		int[] ops = new int[2];
-		if(token.matches("a")){
-			ops[0] = -1;
-			return ops;
-		}
-		if(token.matches("[0-9]+")){
-			ops[0] = Integer.parseInt(token);
-			return ops;
-		}
-		if(token.matches("s\\[i[0-9]*\\+*[0-9]*\\]")){
+		if(token.matches(PATTERN_MMEM)){
 			token = token.replaceAll("s\\[i(.*)\\]", "0$1");
 			String[] s = token.split("\\+");
 			ops[0] = Integer.parseInt(s[0]);
@@ -274,11 +256,35 @@ public class Parser {
 				ops[1] = Integer.parseInt(s[1]);
 			return ops;
 		}
-		if(token.matches("s\\[[0-9]+\\]")){
+		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + token);
+	}
+	
+	/**
+	 * Parsfunktion zum Parsen von allen möglichen Operanden (außer MMEM)
+	 * @param token
+	 * @return
+	 * @throws SyntaxErrorException
+	 */
+	private static int parseOperand(String token) throws SyntaxErrorException{
+		int op;
+		if(token.matches(PATTERN_AKKU)){
+			op = -1;
+			return op;
+		}
+		if(token.matches(PATTERN_IMM)){
+			op = Integer.parseInt(token);
+			return op;
+		}
+		if(token.matches(PATTERN_MEM)){
 			token = token.replaceAll("s\\[(.*)\\]", "$1");
-			ops[0] = Integer.parseInt(token);
+			op = Integer.parseInt(token);
+			return op;
+		}
+		if(token.matches(PATTERN_INDEX)){
+			token = token.replaceAll("i(\\d+)", "0$1");
+			op = Integer.parseInt(token);
+			return op;
 		}
 		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + token);
 	}
-
 }

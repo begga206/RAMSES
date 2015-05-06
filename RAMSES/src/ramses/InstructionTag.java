@@ -44,5 +44,41 @@ public enum InstructionTag {
 	IDX_DEC,	//i <- i - 1
 	
 	//HALT
-	HALT
+	HALT;
+	
+	public String toString(){
+		switch(this){
+			case LD_REG_IMM : return "LD_REG_IMM";
+			case LD_REG_MEM : return "LD_REG_MEM";
+			case LD_A_MMEM  : return "LD_A_MMEM";
+			case LD_MEM_REG : return "LD_MEM_REG";
+			case LD_MMEM_A  : return "LD_MMEM_A";
+			case JUMP		: return "JUMP";
+			case JUMP_EQ 	: return "JUMP_EQ";
+			case JUMP_GE 	: return "JUMP_GE";
+			case JUMP_GT 	: return "JUMP_GT";
+			case JUMP_LE 	: return "JUMP_LE";
+			case JUMP_LT 	: return "JUMP_LT";
+			case JUMP_NE 	: return "JUMP_NE";
+			case ADD_A_IMM 	: return "ADD_A_IMM";
+			case ADD_A_MEM 	: return "ADD_A_MEM";
+			case ADD_A_MMEM : return "ADD_A_MMEM";
+			case SUB_A_IMM 	: return "SUB_A_IMM";
+			case SUB_A_MEM 	: return "SUB_A_MEM";
+			case SUB_A_MMEM : return "SUB_A_MMEM";
+			case MUL_A_IMM 	: return "MUL_A_IMM";
+			case MUL_A_MEM 	: return "MUL_A_MEM";
+			case MUL_A_MMEM : return "MUL_A_MMEM";
+			case DIV_A_IMM 	: return "DIV_A_IMM";
+			case DIV_A_MEM 	: return "DIV_A_MEM";
+			case DIV_A_MMEM : return "DIV_A_MMEM";
+			case MOD_A_IMM 	: return "MOD_A_IMM";
+			case MOD_A_MEM 	: return "MOD_A_MEM";
+			case MOD_A_MMEM : return "MOD_A_MMEM";
+			case IDX_INC 	: return "IDX_INC";
+			case IDX_DEC 	: return "IDX_DEC";
+			case HALT 		: return "HALT";	
+		}
+		return null;
+	}
 }
