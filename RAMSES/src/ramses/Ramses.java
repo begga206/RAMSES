@@ -257,8 +257,8 @@ public class Ramses {
 	}
 	
 	private String jump(Instruction inst){
-		if (inst.getP0() >= 0 && inst.getP0() <= counter){
-			ip = inst.getP0()-1;
+		if (inst.getP0() >= 0 && inst.getP0() <= p.length){
+			iP = inst.getP0()-1;
 			return "\n" + OUTPUT + "jump " + inst.getP0();
 		}	
 		else
