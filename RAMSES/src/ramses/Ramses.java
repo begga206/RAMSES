@@ -41,10 +41,13 @@ public class Ramses {
 				output += addAMmem(inst);
 				break;
 			case DIV_A_IMM:
+				output += divAImm(inst);
 				break;
 			case DIV_A_MEM:
+				output += divAMem(inst);
 				break;
 			case DIV_A_MMEM:
+				output += divAMmem(inst);
 				break;
 			case HALT:
 				return;
@@ -117,5 +120,32 @@ public class Ramses {
 	private String addAMmem(Instruction inst){
 		a += s[i[inst.getP0()]+inst.getP1()];
 		return "\n" + OUTPUT + "a <-- a + s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+	}
+	
+	private String divAImm(Instruction inst){
+		if (inst.getP0 != 0){
+			a = a / inst.getP0();
+			return "\n" + OUTPUT + "a <-- a div " + inst.getP0();
+		}
+		else
+			throw new RuntimeException();
+	}
+	
+	private String divAMem(Instruction inst){
+		if (s[inst.getP0()] != 0){
+			a = a / s[inst.getP0()];
+			return "\n" + OUTPUT + "a <-- a div s[" + inst.getP0() + "]";
+		}
+		else
+			throw new RuntimeException();
+	}
+	
+	private String divAMmem(Instruction inst){
+		if(s[i[inst.getP0()]+inst.getP1()] != 0){
+			a = a / s[i[inst.getP0()]+inst.getP1()];
+			return "\n" + OUTPUT + "a <-- a div s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		}
+		else
+			throw new RuntimeException();
 	}
 }
