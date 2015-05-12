@@ -1,9 +1,12 @@
 package ramses;
 
+import java.util.Scanner;
+
 public class Ramses {
 	public static final int MAX_MEM = 255;
 	public static final int MAX_INDEX = 5;
 	public static final String OUTPUT = "#OUTPUT#";
+	public static final String ERROR_OUTPUT_IN_INPUT = "You cannot allocate the same data slot in INPUT and OUTPUT.";
 	public static final String ERROR_DIVISION_BY_ZERO = "Division by Zero";
 	public static final String ERROR_INDEX_OUT_OF_BOUNDS = "Index out of bounds";
 	public static final String ERROR_MEMORY_OUT_OF_BOUNDS = "Memory out of bounds";
@@ -20,117 +23,159 @@ public class Ramses {
 	private int[] s;
 	/** Programmspeicher */
 	private Instruction[] p;
-	private String output;
+	/** Input */
+	private Input[] input;
+	/** Output */
+	private int[] output;
+	private String outputString;
 	
 	
-	public Ramses(Instruction[] p){
+	public Ramses(Input[] input, int[] output, Instruction[] p) throws LogicalErrorException{
 		counter = 0;
+		this.input = input;
+		this.output = output;
 		this.p = p;
 		a = 0;
 		i = new int[MAX_INDEX];
-		s = new int[MAX_MEM];
-		output = "";
+		initS();
+		outputString = "";
+	}
+	
+	private void initS() throws LogicalErrorException{
+		int maxIndex = 0;
+		
+		for(int i = 0; i < output.length; i++){
+			for(int j = 0; j < input.length; j++){
+				if(output[i] == input[j].getIndex()){
+					throw new LogicalErrorException(-2, ERROR_OUTPUT_IN_INPUT);
+				}
+				if(output[i] > maxIndex)
+					maxIndex = output[i];
+				if(input[j].getIndex() > maxIndex)
+					maxIndex = input[j].getIndex();
+			}	
+		}
+		s = new int[maxIndex+1];
+		for(int i = 0; i < input.length; i++){
+			if(input[i].hasValue())
+				s[input[i].getIndex()] = input[i].getValue();
+		}
+	}
+	
+	public void start(){
+		counter = 0;
+		Scanner sc = new Scanner(System.in);
+		for(int i = 0; i < input.length; i++){
+			if(!input[i].hasValue()){
+				System.out.println("s[" + input[i].getIndex() + "]:\t");
+				s[input[i].getIndex()] = sc.nextInt();
+			}
+		}
+		sc.close();
+		process(p[0]);
 	}
 	
 	public void process(Instruction inst){
+		iP++;
 		try {
 			switch(inst.getInstTag()){
 			case ADD_A_IMM:
-				output += addAImm(inst);
+				outputString += addAImm(inst);
 				break;
 			case ADD_A_MEM:
-				output += addAMem(inst);
+				outputString += addAMem(inst);
 				break;
 			case ADD_A_MMEM:
-				output += addAMmem(inst);
+				outputString += addAMmem(inst);
 				break;
 			case DIV_A_IMM:
-				output += divAImm(inst);
+				outputString += divAImm(inst);
 				break;
 			case DIV_A_MEM:
-				output += divAMem(inst);
+				outputString += divAMem(inst);
 				break;
 			case DIV_A_MMEM:
-				output += divAMmem(inst);
+				outputString += divAMmem(inst);
 				break;
 			case HALT:
-				output += halt(inst);
+				outputString += halt(inst);
+				System.out.println(outputString);
 				return;
 			case IDX_DEC:
-				output += idxDec(inst);
+				outputString += idxDec(inst);
 				break;
 			case IDX_INC:
-				output += idxInc(inst);
+				outputString += idxInc(inst);
 				break;
 			case JUMP: //to do
-				output += jump(inst);
+				outputString += jump(inst);
 				break;
 			case JUMP_EQ: //to do
-				output += jumpEq(inst);
+				outputString += jumpEq(inst);
 				break;
 			case JUMP_GE: //to do
-				output += jumpGe(inst);
+				outputString += jumpGe(inst);
 				break;
 			case JUMP_GT: //to do
-				output += jumpGt(inst);
+				outputString += jumpGt(inst);
 				break;
 			case JUMP_LE: //to do
-				output += jumpLe(inst);
+				outputString += jumpLe(inst);
 				break;
 			case JUMP_LT: //to do
-				output += jumpLt(inst);
+				outputString += jumpLt(inst);
 				break;
 			case JUMP_NE: //to do
-				output += jumpNe(inst);
+				outputString += jumpNe(inst);
 				break;
 			case LD_A_MMEM: //to do
-				output += ldAMmem(inst);
+				outputString += ldAMmem(inst);
 				break;
 			case LD_MEM_REG: //to do
-				output += ldMemReg(inst);
+				outputString += ldMemReg(inst);
 				break;
 			case LD_MMEM_A: //to do
-				output += ldMmemA(inst);
+				outputString += ldMmemA(inst);
 				break;
 			case LD_REG_IMM: //to do
-				output += ldRegImm(inst);
+				outputString += ldRegImm(inst);
 				break;
 			case LD_REG_MEM: //to do
-				output += ldRegMem(inst);
+				outputString += ldRegMem(inst);
 				break;
 			case MOD_A_IMM:
-				output += modAImm(inst);
+				outputString += modAImm(inst);
 				break;
 			case MOD_A_MEM:
-				output += modAMem(inst);
+				outputString += modAMem(inst);
 				break;
 			case MOD_A_MMEM:
-				output += modAMmem(inst);
+				outputString += modAMmem(inst);
 				break;
 			case MUL_A_IMM:
-				output += mulAImm(inst);
+				outputString += mulAImm(inst);
 				break;
 			case MUL_A_MEM:
-				output += mulAMem(inst);
+				outputString += mulAMem(inst);
 				break;
 			case MUL_A_MMEM:
-				output += mulAMmem(inst);
+				outputString += mulAMmem(inst);
 				break;
 			case SUB_A_IMM:
-				output += subAImm(inst);
+				outputString += subAImm(inst);
 				break;
 			case SUB_A_MEM:
-				output += subAMem(inst);
+				outputString += subAMem(inst);
 				break;
 			case SUB_A_MMEM:
-				output += subAMmem(inst);
+				outputString += subAMmem(inst);
 				break;
 			default:
 				break;
 			}
-			process(p[iP+1]);
+			process(p[iP]);
 		} catch (Exception e) {
-			System.out.println(output);
+			System.out.println(outputString);
 			System.out.println(e + "FEHLER");
 		}
 	}
@@ -250,7 +295,11 @@ public class Ramses {
 	}
 	
 	private String halt(Instruction inst){
-		return "\n" + OUTPUT + "Halt";
+		String string = "\n" + OUTPUT + "Halt\n";
+		for(int i=0; i<output.length; i++){
+			string += "s[" + output[i] + "] = " + s[output[i]] + "\t";
+		}
+		return string;
 	}
 	
 	private String idxDec(Instruction inst){
@@ -273,7 +322,7 @@ public class Ramses {
 	
 	private String jump(Instruction inst){
 		if (inst.getP0() >= 0 && inst.getP0() <= p.length){
-			iP = inst.getP0()-1;
+			iP = inst.getP0();
 			return "\n" + OUTPUT + "jump " + inst.getP0();
 		}	
 		else
@@ -282,7 +331,7 @@ public class Ramses {
 	
 	private String ldRegImm(Instruction inst){
 		if (inst.getP0() == -1){
-			a = inst.getP0();
+			a = inst.getP1();
 			return "\n" + OUTPUT + "a<-" + inst.getP0();
 		}	
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
@@ -340,16 +389,16 @@ public class Ramses {
 	private String jumpEq(Instruction inst){
 		if (inst.getP0() == -1){
 			if (a == 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a=0 then jump " + inst.getP1();	
 			}
 			else
 				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil a!=0";
 		}		
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			if (inst.getP0() == 0){
-				iP = inst.getP1()-1;
-				return "\n" + OUTPUT + "if a=0 then jump " + inst.getP1();
+			if (i[inst.getP0()] == 0){
+				iP = inst.getP1();
+				return "\n" + OUTPUT + "if i=0 then jump " + inst.getP1();
 			}
 			else
 				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil i" + inst.getP0() + "!=0";
@@ -361,7 +410,7 @@ public class Ramses {
 	private String jumpGe(Instruction inst){
 		if (inst.getP0() == -1){
 			if (a >= 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a>=0 then jump " + inst.getP1();	
 			}
 			else
@@ -369,7 +418,7 @@ public class Ramses {
 		}		
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			if (inst.getP0() >= 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a>=0 then jump " + inst.getP1();
 			}
 			else
@@ -382,7 +431,7 @@ public class Ramses {
 	private String jumpGt(Instruction inst){
 		if (inst.getP0() == -1){
 			if (a > 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a>0 then jump " + inst.getP1();	
 			}
 			else
@@ -390,7 +439,7 @@ public class Ramses {
 		}		
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			if (inst.getP0() > 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a>0 then jump " + inst.getP1();
 			}
 			else
@@ -403,7 +452,7 @@ public class Ramses {
 	private String jumpLe(Instruction inst){
 		if (inst.getP0() == -1){
 			if (a <= 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a<=0 then jump " + inst.getP1();	
 			}
 			else
@@ -411,7 +460,7 @@ public class Ramses {
 		}		
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			if (inst.getP0() <= 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a<=0 then jump " + inst.getP1();
 			}
 			else
@@ -424,7 +473,7 @@ public class Ramses {
 	private String jumpLt(Instruction inst){
 		if (inst.getP0() == -1){
 			if (a < 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a<0 then jump " + inst.getP1();	
 			}
 			else
@@ -432,7 +481,7 @@ public class Ramses {
 		}		
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			if (inst.getP0() < 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a<0 then jump " + inst.getP1();
 			}
 			else
@@ -445,7 +494,7 @@ public class Ramses {
 	private String jumpNe(Instruction inst){
 		if (inst.getP0() == -1){
 			if (a != 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a!=0 then jump " + inst.getP1();	
 			}
 			else
@@ -453,7 +502,7 @@ public class Ramses {
 		}		
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			if (inst.getP0() != 0){
-				iP = inst.getP1()-1;
+				iP = inst.getP1();
 				return "\n" + OUTPUT + "if a!=0 then jump " + inst.getP1();
 			}
 			else

@@ -95,11 +95,11 @@ public class Parser {
 			if(token.matches(PATTERN_MEM)){
 				input.add(new Input(parseOperand(token)));
 			}else if(token.matches(PATTERN_MEMS)){
-				String[] s = token.split("...");
-				int from = Integer.parseInt(s[0]);
-				int till = Integer.parseInt(s[1]);
+				String[] s = token.split("\\.\\.\\.");
+				int from = parseOperand(s[0]);
+				int till = parseOperand(s[1]);
 				
-				for(int i = from; i < till; i++){
+				for(int i = from; i <= till; i++){
 					input.add(new Input(i));
 				}
 			}else if(token.matches(PATTERN_INPUT_MEM_VALUE)){
@@ -109,8 +109,11 @@ public class Parser {
 			}else
 				throw new SyntaxErrorException(-2, ERROR_INPUT_FORMAT + token);
 		}
-		
-		return (Input[])input.toArray();
+		Input[] n = new Input[input.size()];
+		for(int i = 0; i < n.length; i++){
+			n[i] = input.get(i);
+		}
+		return n;
 	}
 	
 	public static int[] parseOutput(String outputLine) throws SyntaxErrorException{
@@ -190,7 +193,7 @@ public class Parser {
 	 */
 	private static Instruction parseCondJump(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
 		int p0,p1;
-		p0 = Integer.parseInt(tokens.get(INDEX_COND_JUMP_REG));
+		p0 = parseOperand(tokens.get(INDEX_COND_JUMP_REG));
 		p1 = Integer.parseInt(tokens.get(INDEX_COND_JUMP_DEST));
 		
 		switch(tokens.get(INDEX_COND_JUMP_IDENT)){

@@ -21,6 +21,11 @@ public class Input {
 		return index;
 	}
 
+	public void setValue(int value) {
+		this.value = value;
+		hasValue = true;
+	}
+
 	public int getValue() {
 		return value;
 	}
