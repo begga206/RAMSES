@@ -148,7 +148,7 @@ public class Ramses {
 	}
 	
 	private String divAImm(Instruction inst){
-		if (inst.getP0 != 0){
+		if (inst.getP0() != 0){
 			a = a / inst.getP0();
 			return "\n" + OUTPUT + "a <-- a div " + inst.getP0();
 		}
@@ -190,7 +190,7 @@ public class Ramses {
 	}
 	
 	private String modAImm(Instruction inst){
-		if (inst.getP0 != 0){
+		if (inst.getP0() != 0){
 			a = a % inst.getP0();
 			return "\n" + OUTPUT + "a <-- a mod " + inst.getP0();
 		}
