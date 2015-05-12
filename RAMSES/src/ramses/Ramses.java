@@ -239,7 +239,7 @@ public class Ramses {
 	}
 	
 	private String idxDec(Instruction inst){
-		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			i[inst.getP0()]--;
 			return "\n" + OUTPUT + "i" + inst.getP0() + "<-i" + inst.getP0() + "- 1";
 		}
@@ -248,7 +248,7 @@ public class Ramses {
 	}
 	
 	private String idxInc(Instruction inst){
-		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			i[inst.getP0()]++;
 			return "\n" + OUTPUT + "i" + inst.getP0() + "<-i" + inst.getP0() + "+ 1";
 		}
@@ -270,7 +270,7 @@ public class Ramses {
 			a = inst.getP0();
 			return "\n" + OUTPUT + "a<-" + inst.getP0();
 		}	
-		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			i[inst.getP0()] = inst.getP1();	
 			return "\n" + OUTPUT + "i<-" + inst.getP0() + "<-";
 		}
@@ -283,7 +283,7 @@ public class Ramses {
 			a = s[inst.getP1()];
 			return "\n" + OUTPUT + "a<-s[" + inst.getP0() + "]";
 		}	
-		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			i[inst.getP0()] = s[inst.getP1()];
 			return "\n" + OUTPUT + "i<-s[" + inst.getP0() + "]";
 		}
@@ -292,7 +292,7 @@ public class Ramses {
 	}
 	
 	private String ldAMmem(Instruction inst){
-		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			a = s[i[inst.getP0()]+inst.getP1()];
 			return "\n" + OUTPUT + "a<-s[i" + inst.getP0() + "+" + inst.getP1() + "]";
 		}
@@ -305,7 +305,7 @@ public class Ramses {
 			s[inst.getP0()] = a;
 			return "\n" + OUTPUT + "s[" + inst.getP0() + "]<--" + a;
 		}
-		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			s[inst.getP0()] = i[inst.getP1()];
 			return "\n" + OUTPUT + "s[" + inst.getP0() + "]<--i" + inst.getP1();
 		}
@@ -314,7 +314,7 @@ public class Ramses {
 	}
 	
 	private String ldMmemA(Instruction inst){
-		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			s[i[inst.getP0()]+inst.getP1()] = s[i[inst.getP0()]+inst.getP1()] + a;
 			return "\n" + OUTPUT + "s[i" + inst.getP0() + "+" + inst.getP1() + "]<-" + a;
 		}
