@@ -146,8 +146,12 @@ public class Ramses {
 	}
 	
 	private String addAMmem(Instruction inst){
-		a += s[i[inst.getP0()]+inst.getP1()];
-		return "\n" + OUTPUT + "a<-a + s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
+			a += s[i[inst.getP0()]+inst.getP1()];
+			return "\n" + OUTPUT + "a<-a + s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		}
+		else
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
 	}
 	
 	private String divAImm(Instruction inst){
@@ -160,21 +164,22 @@ public class Ramses {
 	}
 	
 	private String divAMem(Instruction inst){
-		if (s[inst.getP0()] != 0){
+		if (s[inst.getP0()] == 0)
+			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+		else
 			a = a / s[inst.getP0()];
 			return "\n" + OUTPUT + "a<-a div s[" + inst.getP0() + "]";
-		}
-		else
-			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
 	}
 	
 	private String divAMmem(Instruction inst){
-		if(s[i[inst.getP0()]+inst.getP1()] != 0){
+		if (s[inst.getP0()] == 0)
+			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			a = a / s[i[inst.getP0()]+inst.getP1()];
 			return "\n" + OUTPUT + "a<-a div s[i" + inst.getP0() + "+" + inst.getP1() + "]";
 		}
 		else
-			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
 	}
 	
 	private String subAImm(Instruction inst){
@@ -188,8 +193,12 @@ public class Ramses {
 	}
 	
 	private String subAMmem(Instruction inst){
-		a -= s[i[inst.getP0()]+inst.getP1()];
-		return "\n" + OUTPUT + "a<-a - s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
+			a -= s[i[inst.getP0()]+inst.getP1()];
+			return "\n" + OUTPUT + "a<-a - s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		}
+		else
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
 	}
 	
 	private String modAImm(Instruction inst){
@@ -211,12 +220,14 @@ public class Ramses {
 	}
 	
 	private String modAMmem(Instruction inst){
-		if(s[i[inst.getP0()]+inst.getP1()] != 0){
+		if(s[i[inst.getP0()]+inst.getP1()] == 0)
+			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			a = a % s[i[inst.getP0()]+inst.getP1()];
 			return "\n" + OUTPUT + "a<-a mod s[i" + inst.getP0() + "+" + inst.getP1() + "]";
 		}
 		else
-			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
 	}
 	
 	private String mulAImm(Instruction inst){
@@ -230,8 +241,12 @@ public class Ramses {
 	}
 	
 	private String mulAMmem(Instruction inst){
-		a = a * s[i[inst.getP0()]+inst.getP1()];
-		return "\n" + OUTPUT + "a<-a * s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
+			a = a * s[i[inst.getP0()]+inst.getP1()];
+			return "\n" + OUTPUT + "a<-a * s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		}	
+		else
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
 	}
 	
 	private String halt(Instruction inst){
@@ -320,5 +335,14 @@ public class Ramses {
 		}
 		else
 			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+	}
+	
+	private String jumpEq(Instruction inst){
+		if (inst.getP1() == -1 && a >= 0 && a <= p.length){
+			iP = a;
+			return "\n" + OUTPUT + "jump " + a;	
+		else
+			throw new RuntimeException(ERROR_JUMP_INVALID);
+		}	
 	}
 }
