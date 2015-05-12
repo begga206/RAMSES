@@ -5,6 +5,9 @@ public class Ramses {
 	public static final int MAX_INDEX = 5;
 	public static final String OUTPUT = "#OUTPUT#";
 	public static final String ERROR_DIVISION_BY_ZERO = "Division by Zero";
+	public static final String ERROR_INDEX_OUT_OF_BOUNDS = "Index out of bounds";
+	public static final String ERROR_MEMORY_OUT_OF_BOUNDS = "Memory out of bounds";
+	public static final String ERROR_JUMP_INVALID = "Jump Invalid";
 	/** Instruction Counter */
 	private static int counter;
 	/** Instruction Pointer */
@@ -134,23 +137,23 @@ public class Ramses {
 	
 	private String addAImm(Instruction inst){
 		a += inst.getP0();
-		return "\n" + OUTPUT + "a <-- a + " + inst.getP0();
+		return "\n" + OUTPUT + "a<-a + " + inst.getP0();
 	}
 	
 	private String addAMem(Instruction inst){
 		a += s[inst.getP0()];
-		return "\n" + OUTPUT + "a <-- a + s[" + inst.getP0() + "]";
+		return "\n" + OUTPUT + "a<-a + s[" + inst.getP0() + "]";
 	}
 	
 	private String addAMmem(Instruction inst){
 		a += s[i[inst.getP0()]+inst.getP1()];
-		return "\n" + OUTPUT + "a <-- a + s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		return "\n" + OUTPUT + "a<-a + s[i" + inst.getP0() + "+" + inst.getP1() + "]";
 	}
 	
 	private String divAImm(Instruction inst){
 		if (inst.getP0() != 0){
 			a = a / inst.getP0();
-			return "\n" + OUTPUT + "a <-- a div " + inst.getP0();
+			return "\n" + OUTPUT + "a<-a div " + inst.getP0();
 		}
 		else
 			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
@@ -159,7 +162,7 @@ public class Ramses {
 	private String divAMem(Instruction inst){
 		if (s[inst.getP0()] != 0){
 			a = a / s[inst.getP0()];
-			return "\n" + OUTPUT + "a <-- a div s[" + inst.getP0() + "]";
+			return "\n" + OUTPUT + "a<-a div s[" + inst.getP0() + "]";
 		}
 		else
 			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
@@ -168,7 +171,7 @@ public class Ramses {
 	private String divAMmem(Instruction inst){
 		if(s[i[inst.getP0()]+inst.getP1()] != 0){
 			a = a / s[i[inst.getP0()]+inst.getP1()];
-			return "\n" + OUTPUT + "a <-- a div s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+			return "\n" + OUTPUT + "a<-a div s[i" + inst.getP0() + "+" + inst.getP1() + "]";
 		}
 		else
 			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
@@ -176,72 +179,146 @@ public class Ramses {
 	
 	private String subAImm(Instruction inst){
 		a -= inst.getP0();
-		return "\n" + OUTPUT + "a <-- a - " + inst.getP0();
+		return "\n" + OUTPUT + "a<-a - " + inst.getP0();
 	}
 	
 	private String subAMem(Instruction inst){
 		a -= s[inst.getP0()];
-		return "\n" + OUTPUT + "a <-- a - s[" + inst.getP0() + "]";
+		return "\n" + OUTPUT + "a<-a - s[" + inst.getP0() + "]";
 	}
 	
 	private String subAMmem(Instruction inst){
 		a -= s[i[inst.getP0()]+inst.getP1()];
-		return "\n" + OUTPUT + "a <-- a - s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		return "\n" + OUTPUT + "a<-a - s[i" + inst.getP0() + "+" + inst.getP1() + "]";
 	}
 	
 	private String modAImm(Instruction inst){
 		if (inst.getP0() != 0){
 			a = a % inst.getP0();
-			return "\n" + OUTPUT + "a <-- a mod " + inst.getP0();
+			return "\n" + OUTPUT + "a<-a mod " + inst.getP0();
 		}
 		else
-			throw new RuntimeException();
+			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
 	}
 	
 	private String modAMem(Instruction inst){
 		if (s[inst.getP0()] != 0){
 			a = a % s[inst.getP0()];
-			return "\n" + OUTPUT + "a <-- a mod s[" + inst.getP0() + "]";
+			return "\n" + OUTPUT + "a<-a mod s[" + inst.getP0() + "]";
 		}
 		else
-			throw new RuntimeException();
+			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
 	}
 	
 	private String modAMmem(Instruction inst){
 		if(s[i[inst.getP0()]+inst.getP1()] != 0){
 			a = a % s[i[inst.getP0()]+inst.getP1()];
-			return "\n" + OUTPUT + "a <-- a mod s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+			return "\n" + OUTPUT + "a<-a mod s[i" + inst.getP0() + "+" + inst.getP1() + "]";
 		}
 		else
-			throw new RuntimeException();
+			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
 	}
 	
 	private String mulAImm(Instruction inst){
 		a = a * inst.getP0();
-		return "\n" + OUTPUT + "a <-- a * " + inst.getP0();
+		return "\n" + OUTPUT + "a<-a * " + inst.getP0();
 	}
 	
 	private String mulAMem(Instruction inst){
 		a = a * s[inst.getP0()];
-		return "\n" + OUTPUT + "a <-- a * s[" + inst.getP0() + "]";
+		return "\n" + OUTPUT + "a<-a * s[" + inst.getP0() + "]";
 	}
 	
 	private String mulAMmem(Instruction inst){
 		a = a * s[i[inst.getP0()]+inst.getP1()];
-		return "\n" + OUTPUT + "a <-- a * s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		return "\n" + OUTPUT + "a<-a * s[i" + inst.getP0() + "+" + inst.getP1() + "]";
 	}
 	
 	private String halt(Instruction inst){
-		return "\n" + OUTPUT + "\t Halt";
+		return "\n" + OUTPUT + "Halt";
 	}
 	
 	private String idxDec(Instruction inst){
-		i[inst.getP0()]--;
-		return "\n" + OUTPUT + "i" + inst.getP0() + " <-- i" + inst.getP0() + "- 1" ;
+		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+			i[inst.getP0()]--;
+			return "\n" + OUTPUT + "i" + inst.getP0() + "<-i" + inst.getP0() + "- 1";
+		}
+		else
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
 	}
 	
 	private String idxInc(Instruction inst){
-		i[inst.getP0()]++;
-		return "\n" + OUTPUT + "i" + inst.getP0() + " <-- i" + inst.getP0() + "+ 1" ;
+		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+			i[inst.getP0()]++;
+			return "\n" + OUTPUT + "i" + inst.getP0() + "<-i" + inst.getP0() + "+ 1";
+		}
+		else
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+	}
+	
+	private String jump(Instruction inst){
+		if (inst.getP0() >= 0 && inst.getP0() <= counter){
+			ip = inst.getP0()-1;
+			return "\n" + OUTPUT + "jump " + inst.getP0();
+		}	
+		else
+			throw new RuntimeException(ERROR_JUMP_INVALID);
+	}
+	
+	private String ldRegImm(Instruction inst){
+		if (inst.getP0() == -1){
+			a = inst.getP0();
+			return "\n" + OUTPUT + "a<-" + inst.getP0();
+		}	
+		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+			i[inst.getP0()] = inst.getP1();	
+			return "\n" + OUTPUT + "i<-" + inst.getP0() + "<-";
+		}
+		else
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+	}
+	
+	private String ldRegMem(Instruction inst){
+		if (inst.getP0() == -1){
+			a = s[inst.getP1()];
+			return "\n" + OUTPUT + "a<-s[" + inst.getP0() + "]";
+		}	
+		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+			i[inst.getP0()] = s[inst.getP1()];
+			return "\n" + OUTPUT + "i<-s[" + inst.getP0() + "]";
+		}
+		else
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+	}
+	
+	private String ldAMmem(Instruction inst){
+		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+			a = s[i[inst.getP0()]+inst.getP1()];
+			return "\n" + OUTPUT + "a<-s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+		}
+		else
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+	}
+	
+	private String ldMemReg(Instruction inst){
+		if (inst.getP1() == -1){
+			s[inst.getP0()] = a;
+			return "\n" + OUTPUT + "s[" + inst.getP0() + "]<--" + a;
+		}
+		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+			s[inst.getP0()] = i[inst.getP1()];
+			return "\n" + OUTPUT + "s[" + inst.getP0() + "]<--i" + inst.getP1();
+		}
+		else
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+	}
+	
+	private String ldMmemA(Instruction inst){
+		if (inst.getP0() >= 0 && inst.getP0() < MAX_INDEX){
+			s[i[inst.getP0()]+inst.getP1()] = s[i[inst.getP0()]+inst.getP1()] + a;
+			return "\n" + OUTPUT + "s[i" + inst.getP0() + "+" + inst.getP1() + "]<-" + a;
+		}
+		else
+			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
 	}
 }
