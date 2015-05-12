@@ -12,6 +12,7 @@ public class Parser {
 
 	public static final String TOKEN = "\tTOKEN: ";
 	public static final String COLON = ":";
+	public static final String COMMA = ",";
 	//ERROR MESSAGES//
 	public static final String ERROR_EXCPECTED_COLON = "Expected ':' after Instruction Pointer";
 	public static final String ERROR_INSTPTR_CONTAINS_LETTER = "Instruction Pointer cannot contain a letter";
@@ -19,6 +20,10 @@ public class Parser {
 	public static final String ERROR_WRONG_INSPTR = "Given Instruction Pointer was not expected";
 	public static final String ERROR_WRONG_FORMAT = "The line does not match with any known format";
 	public static final String ERROR_INVALID_OPERATOR = "The operator is invalid";
+	public static final String ERROR_INPUT_KEYWORD = "The keyword 'INPUT' is missing or written wrong.";
+	public static final String ERROR_INPUT_FORMAT = "Unsupported INPUT format. Expected: s[x] | s[x]...s[y] | s[x]=y . Got: ";
+	public static final String ERROR_OUTPUT_KEYWORD = "The keyword 'OUTPUT' is missing or written wrong.";
+	public static final String ERROR_OUTPUT_FORMAT = "Unsupported OUTPUT format. Expected: s[x] | s[x]...s[y] . Got: ";
 
 	//CASES//
 	public static final String CASE_HALT = "HALT";
@@ -49,6 +54,7 @@ public class Parser {
 	public static final int INDEX_OPERATOR = 4;
 	public static final int INDEX_OP2 = 5;
 	public static final int INDEX_JUMP_DEST = 2;
+	public static final int INDEX_COND_JUMP_REG = 2;
 	public static final int INDEX_COND_JUMP_IDENT = 3;
 	public static final int INDEX_COND_JUMP_DEST = 7;
 	
@@ -65,9 +71,84 @@ public class Parser {
 	public static final String PATTERN_MEM = "s\\[[0-9]+\\]";
 	public static final String PATTERN_MMEM = "s\\[i[0-9]*\\+*[0-9]*\\]";
 	public static final String PATTERN_REG = "(a|i\\d*)";
-	
+	public static final String PATTERN_MEMS = "s\\[\\d+\\]...s\\[\\d+\\]";
+	public static final String PATTERN_INPUT_MEM_VALUE = "s\\[\\d+\\]\\s?=\\s?-?\\d+";
+	public static final String PATTERN_INPUT_KEYWORD = "INPUT";
+	public static final String PATTERN_OUTPUT_KEYWORD = "OUTPUT";
 	
 	private static int instPtr;
+	
+	public static Input[] parseInput(String inputLine) throws SyntaxErrorException{
+		ArrayList<Input> input = new ArrayList<>();
+		ArrayList<String> tokens = new ArrayList<>();
+		Scanner sc = new Scanner(inputLine);
+		if(!sc.next().matches(PATTERN_INPUT_KEYWORD)) {
+			sc.close();
+			throw new SyntaxErrorException(-2, ERROR_INPUT_KEYWORD);
+		}
+		sc.useDelimiter(COMMA);
+		while(sc.hasNext())
+			tokens.add(sc.next().trim());
+		sc.close();
+		
+		for(String token : tokens){
+			if(token.matches(PATTERN_MEM)){
+				input.add(new Input(parseOperand(token)));
+			}else if(token.matches(PATTERN_MEMS)){
+				String[] s = token.split("...");
+				int from = Integer.parseInt(s[0]);
+				int till = Integer.parseInt(s[1]);
+				
+				for(int i = from; i < till; i++){
+					input.add(new Input(i));
+				}
+			}else if(token.matches(PATTERN_INPUT_MEM_VALUE)){
+				String index = token.replaceAll("s\\[(\\d+)\\]\\s?=\\s?-?\\d+", "$1");
+				String value = token.replaceAll("s\\[\\d+\\]\\s?=\\s?-?(\\d+)", "$1");
+				input.add(new Input(Integer.parseInt(index),Integer.parseInt(value)));
+			}else
+				throw new SyntaxErrorException(-2, ERROR_INPUT_FORMAT + token);
+		}
+		
+		return (Input[])input.toArray();
+	}
+	
+	public static int[] parseOutput(String outputLine) throws SyntaxErrorException{
+		ArrayList<Integer> output = new ArrayList<>();
+		ArrayList<String> tokens = new ArrayList<>();
+		Scanner sc = new Scanner(outputLine);
+		if(!sc.next().matches(PATTERN_OUTPUT_KEYWORD)) {
+			sc.close();
+			throw new SyntaxErrorException(-1, ERROR_OUTPUT_KEYWORD);
+		}
+		sc.useDelimiter(COMMA);
+		while(sc.hasNext())
+			tokens.add(sc.next().trim());
+		sc.close();
+		
+		for(String token : tokens){
+			if(token.matches(PATTERN_MEM)){
+				output.add(parseOperand(token));
+			}else if(token.matches(PATTERN_MEMS)){
+				String[] s = token.split("...");
+				int from = Integer.parseInt(s[0]);
+				int till = Integer.parseInt(s[1]);
+				
+				for(int i = from; i < till; i++){
+					output.add(i);
+				}
+			}else
+				throw new SyntaxErrorException(-1, ERROR_INPUT_FORMAT + token);
+		}
+		int[] n = new int[output.size()];
+		for(int i = 0; i < n.length; i++){
+			n[i] = output.get(i);
+		}
+		return n;
+		
+	}
+	
+	
 	
 	/**
 	 * Hauptfunktion zum Parsen der Befehlszeile
@@ -108,22 +189,23 @@ public class Parser {
 	 * @throws SyntaxErrorException
 	 */
 	private static Instruction parseCondJump(String instLine, ArrayList<String> tokens) throws SyntaxErrorException{
-		int p0;
-		p0 = Integer.parseInt(tokens.get(INDEX_COND_JUMP_DEST));
+		int p0,p1;
+		p0 = Integer.parseInt(tokens.get(INDEX_COND_JUMP_REG));
+		p1 = Integer.parseInt(tokens.get(INDEX_COND_JUMP_DEST));
 		
 		switch(tokens.get(INDEX_COND_JUMP_IDENT)){
 			case CASE_EQ:
-				return new Instruction(InstructionTag.JUMP_EQ, p0);
+				return new Instruction(InstructionTag.JUMP_EQ, p0, p1);
 			case CASE_GE:
-				return new Instruction(InstructionTag.JUMP_GE, p0);
+				return new Instruction(InstructionTag.JUMP_GE, p0, p1);
 			case CASE_GT:
-				return new Instruction(InstructionTag.JUMP_GT, p0);
+				return new Instruction(InstructionTag.JUMP_GT, p0, p1);
 			case CASE_LE:
-				return new Instruction(InstructionTag.JUMP_LE, p0);
+				return new Instruction(InstructionTag.JUMP_LE, p0, p1);
 			case CASE_LT:
-				return new Instruction(InstructionTag.JUMP_LT, p0);
+				return new Instruction(InstructionTag.JUMP_LT, p0, p1);
 			case CASE_NE:
-				return new Instruction(InstructionTag.JUMP_NE, p0);
+				return new Instruction(InstructionTag.JUMP_NE, p0, p1);
 			default:
 				throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + tokens.get(INDEX_COND_JUMP_IDENT)); 
 		}
