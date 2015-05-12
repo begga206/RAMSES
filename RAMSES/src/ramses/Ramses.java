@@ -338,11 +338,128 @@ public class Ramses {
 	}
 	
 	private String jumpEq(Instruction inst){
-		if (inst.getP1() == -1 && a >= 0 && a <= p.length){
-			iP = a;
-			return "\n" + OUTPUT + "jump " + a;	
+		if (inst.getP0() == -1){
+			if (a == 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a=0 then jump " + inst.getP1();	
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil a!=0";
+		}		
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
+			if (inst.getP0() == 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a=0 then jump " + inst.getP1();
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil i" + inst.getP0() + "!=0";
+		}
 		else
 			throw new RuntimeException(ERROR_JUMP_INVALID);
-		}	
+	}
+	
+	private String jumpGe(Instruction inst){
+		if (inst.getP0() == -1){
+			if (a >= 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a>=0 then jump " + inst.getP1();	
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil a<0";
+		}		
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
+			if (inst.getP0() >= 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a>=0 then jump " + inst.getP1();
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil i" + inst.getP0() + "<0";
+		}
+		else
+			throw new RuntimeException(ERROR_JUMP_INVALID);
+	}
+	
+	private String jumpGt(Instruction inst){
+		if (inst.getP0() == -1){
+			if (a > 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a>0 then jump " + inst.getP1();	
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil a<=0";
+		}		
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
+			if (inst.getP0() > 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a>0 then jump " + inst.getP1();
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil i" + inst.getP0() + "<=0";
+		}
+		else
+			throw new RuntimeException(ERROR_JUMP_INVALID);
+	}
+	
+	private String jumpLe(Instruction inst){
+		if (inst.getP0() == -1){
+			if (a <= 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a<=0 then jump " + inst.getP1();	
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil a>0";
+		}		
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
+			if (inst.getP0() <= 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a<=0 then jump " + inst.getP1();
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil i" + inst.getP0() + ">0";
+		}
+		else
+			throw new RuntimeException(ERROR_JUMP_INVALID);
+	}
+	
+	private String jumpLt(Instruction inst){
+		if (inst.getP0() == -1){
+			if (a < 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a<0 then jump " + inst.getP1();	
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil a>=0";
+		}		
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
+			if (inst.getP0() < 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a<0 then jump " + inst.getP1();
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil i" + inst.getP0() + ">=0";
+		}
+		else
+			throw new RuntimeException(ERROR_JUMP_INVALID);
+	}
+	
+	private String jumpNe(Instruction inst){
+		if (inst.getP0() == -1){
+			if (a != 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a!=0 then jump " + inst.getP1();	
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil a=0";
+		}		
+		if (inst.getP0() >= 0 && inst.getP0() < i.length){
+			if (inst.getP0() != 0){
+				iP = inst.getP1()-1;
+				return "\n" + OUTPUT + "if a!=0 then jump " + inst.getP1();
+			}
+			else
+				return "\n" + OUTPUT + "Sprung auf Befehl" + inst.getP1() + "nicht genommen, weil i" + inst.getP0() + "=0";
+		}
+		else
+			throw new RuntimeException(ERROR_JUMP_INVALID);
 	}
 }
