@@ -50,13 +50,13 @@ public class Ramses {
 			case DIV_A_MMEM:
 				output += divAMmem(inst);
 				break;
-			case HALT: //to do
+			case HALT:
 				output += halt(inst);
 				return;
-			case IDX_DEC: //to do
+			case IDX_DEC:
 				output += idxDec(inst);
 				break;
-			case IDX_INC: //to do
+			case IDX_INC:
 				output += idxInc(inst);
 				break;
 			case JUMP: //to do
@@ -229,5 +229,19 @@ public class Ramses {
 	private String mulAMmem(Instruction inst){
 		a = a * s[i[inst.getP0()]+inst.getP1()];
 		return "\n" + OUTPUT + "a <-- a * s[i" + inst.getP0() + "+" + inst.getP1() + "]";
+	}
+	
+	private String halt(Instruction inst){
+		return "\n" + OUTPUT + "\t Halt";
+	}
+	
+	private String idxDec(Instruction inst){
+		i[inst.getP0()]--;
+		return "\n" + OUTPUT + "i" + inst.getP0() + " <-- i" + inst.getP0() + "- 1" ;
+	}
+	
+	private String idxInc(Instruction inst){
+		i[inst.getP0()]++;
+		return "\n" + OUTPUT + "i" + inst.getP0() + " <-- i" + inst.getP0() + "+ 1" ;
 	}
 }
