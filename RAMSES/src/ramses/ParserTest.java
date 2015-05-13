@@ -10,7 +10,7 @@ public class ParserTest {
 		Ramses ramses;
 		ArrayList<String> data = new ArrayList<>();
 		Input[] input;
-		Instruction[] inst;
+		ArrayList<Instruction> inst = new ArrayList<>();
 		int[] output;
 		try(BufferedReader br = new BufferedReader(new FileReader(new File(PATH)))){
 			while(br.ready()){
@@ -23,9 +23,8 @@ public class ParserTest {
 		try {
 			input = Parser.parseInput(data.get(0));
 			output = Parser.parseOutput(data.get(1));
-			inst = new Instruction[data.size()-2];
-			for(int i = 0; i < inst.length; i++){
-				inst[i] = Parser.parseInst(i, data.get(i+2));
+			for(int i = 0; i < data.size()-2; i++){
+				inst.add(Parser.parseInst(i, data.get(i+2)));
 			}
 			ramses = new Ramses(input,output,inst);
 			ramses.start();
