@@ -366,7 +366,7 @@ public class Parser {
 			return op;
 		}
 		if(token.matches(PATTERN_INDEX)){
-			token = token.replaceAll("i(\\d+)", "0$1");
+			token = token.replaceAll("i", "0");
 			op = Integer.parseInt(token);
 			return op;
 		}
