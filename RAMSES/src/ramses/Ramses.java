@@ -541,7 +541,7 @@ public class Ramses {
 			if (i[inst.getP0()] == 0){
 				iP = inst.getP1();
 			}
-			reg = "i" + i[inst.getP0()];
+			reg = "i" + inst.getP0();
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
