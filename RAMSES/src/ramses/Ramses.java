@@ -568,7 +568,7 @@ public class Ramses {
 			if (inst.getP0() >= 0){
 				iP = inst.getP1();
 			}
-			reg = "i" + i[inst.getP0()];
+			reg = "i" + inst.getP0();
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
@@ -595,7 +595,7 @@ public class Ramses {
 			if (inst.getP0() > 0){
 				iP = inst.getP1();
 			}
-			reg = "i" + i[inst.getP0()];
+			reg = "i" + inst.getP0();
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
@@ -622,7 +622,7 @@ public class Ramses {
 			if (inst.getP0() <= 0){
 				iP = inst.getP1();
 			}
-			reg = "i" + i[inst.getP0()];
+			reg = "i" + inst.getP0();
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
@@ -649,7 +649,7 @@ public class Ramses {
 			if (inst.getP0() < 0){
 				iP = inst.getP1();
 			}
-			reg = "i" + i[inst.getP0()];
+			reg = "i" + inst.getP0();
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
@@ -676,7 +676,7 @@ public class Ramses {
 			if (inst.getP0() != 0){
 				iP = inst.getP1();
 			}
-			reg = "i" + i[inst.getP0()];
+			reg = "i" + inst.getP0();
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
@@ -684,7 +684,7 @@ public class Ramses {
 		
 		out = p.indexOf(inst) + ": if " + reg + " != 0 then jump " + inst.getP1();
 		addRow(out);
-		fillTable(reg, regValue);//
+		fillTable(reg, regValue);
 		return OUTPUT + out;
 	}
 }
