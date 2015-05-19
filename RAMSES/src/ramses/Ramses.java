@@ -684,7 +684,7 @@ public class Ramses {
 		
 		out = p.indexOf(inst) + ": if " + reg + " != 0 then jump " + inst.getP1();
 		addRow(out);
-		fillTable(reg, regValue);
+		fillTable(reg, regValue);//
 		return OUTPUT + out;
 	}
 }
