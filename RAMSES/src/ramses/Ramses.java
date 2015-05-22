@@ -113,7 +113,9 @@ public class Ramses {
 	public void start() throws LogicalErrorException{
 		counter = 0;
 		iP = 0;
+		a = 0;
 		initS();
+		i = new int[MAX_INDEX];
 		process(p.get(0));
 	}
 	

@@ -133,9 +133,9 @@ public class Parser {
 			if(token.matches(PATTERN_MEM)){
 				output.add(parseOperand(token));
 			}else if(token.matches(PATTERN_MEMS)){
-				String[] s = token.split("...");
-				int from = Integer.parseInt(s[0]);
-				int till = Integer.parseInt(s[1]);
+				String[] s = token.split("\\.\\.\\.");
+				int from = parseOperand(s[0]);
+				int till = parseOperand(s[1]);
 				
 				for(int i = from; i < till; i++){
 					output.add(i);

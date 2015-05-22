@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class ParserTest {
-	public static final String PATH  = "C:/Users/Lukas/Desktop/RAMSES.txt";
+	public static final String PATH  = "C:/Users/Paul/Desktop/RAMSES.txt";
 	
 	public static void main(String[] args) {
 		Ramses ramses;

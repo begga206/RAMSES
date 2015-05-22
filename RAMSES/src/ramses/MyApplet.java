@@ -102,6 +102,7 @@ public class MyApplet extends JApplet{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				data = new ArrayList<>();
+				inst = new ArrayList<Instruction>();
 				try(Scanner sc = new Scanner(editor.getText())){
 					sc.useDelimiter("\n");
 					while(sc.hasNext()){
