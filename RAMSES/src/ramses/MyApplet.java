@@ -10,27 +10,35 @@ import java.util.Scanner;
 import javax.swing.*;
 
 
-
+/**
+ * Appletklasse, welche die grafische Oberfläche realisiert
+ * @author Lukas
+ *
+ */
 public class MyApplet extends JApplet{
-	Container c;
-	JPanel leftPanel;
-	JPanel centerPanel;
-	JPanel rightPanel;
-	JButton compile;
-	JButton start;
-	JTable table;
-	JTextArea editor;
-	JTextArea console;
 	
+	/////////////GUI ELEMENTE//////////
+	private Container c;
+	private JPanel leftPanel;
+	private JPanel centerPanel;
+	private JPanel rightPanel;
+	private JButton compile;
+	private JButton start;
+	private JTable table;
+	private JTextArea editor;
+	private JTextArea console;
 	
-	Input[] input;
-	int[] output;
-	ArrayList<String> data;
-	ArrayList<Instruction> inst;
-	ArrayList<ArrayList<String>> matrix;
-	Ramses ramses;
+	////////////RAMSES ELEMENTE////////
+	private Input[] input;
+	private int[] output;
+	private ArrayList<String> data;
+	private ArrayList<Instruction> inst;
+	private ArrayList<ArrayList<String>> matrix;
+	private Ramses ramses;
 	
-
+	/**
+	 * Initialisiert die Oberfläche mit Komponenten
+	 */
 	public void init(){
 		c = getContentPane();
 		c.setLayout(new GridLayout(1,3));
@@ -64,6 +72,9 @@ public class MyApplet extends JApplet{
 		c.add(rightPanel);
 	}
 	
+	/**
+	 * Initialisiert das linke Panel
+	 */
 	private void initLeftPanel(){
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
 		buttonPanel.add(compile);
@@ -78,12 +89,18 @@ public class MyApplet extends JApplet{
 		leftPanel.add(buttonPanel);
 	}
 	
+	/**
+	 * Initialisiert das mittlere Panel
+	 */
 	private void initCenterPanel(){
 		centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
 		centerPanel.add(new JLabel("Input: "));
 		fillInputLabels();
 	}
 	
+	/**
+	 * Füllt das mittlere Panel mit den Input-eingaben
+	 */
 	private void fillInputLabels(){
 		//existierende Inputlabels löschen
 		centerPanel.removeAll();
@@ -96,6 +113,9 @@ public class MyApplet extends JApplet{
 		}
 	}
 	
+	/**
+	 * Initialisiert die Buttonlistener
+	 */
 	private void initListeners(){
 		compile.addActionListener(new ActionListener(){
 
@@ -155,6 +175,9 @@ public class MyApplet extends JApplet{
 		});
 	}
 	
+	/**
+	 * Erstellt einen JTable anhand der Matrix aus RAMSES
+	 */
 	private void createTable(){
 		matrix = ramses.getTable();
 		String[] columnNames = matrix.get(0).toArray(new String[matrix.get(0).size()]);
