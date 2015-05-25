@@ -27,7 +27,7 @@ public class ParserTest {
 				inst.add(Parser.parseInst(i, data.get(i+2)));
 			}
 			ramses = new Ramses(input,output,inst);
-			ramses.start();
+			ramses.run();
 		} catch (SyntaxErrorException e) {
 			System.out.println(e);
 		} catch (LogicalErrorException e) {
