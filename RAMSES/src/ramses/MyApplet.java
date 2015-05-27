@@ -3,17 +3,14 @@ package ramses;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 
 import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.table.TableCellRenderer;
 
 /**
  * Appletklasse, welche die grafische Oberfläche realisiert
@@ -22,13 +19,16 @@ import javax.swing.text.*;
  *
  */
 public class MyApplet extends JApplet {
-	public static final String PROMPT = "RAMSES> ";
-	public static final String CMD_GUI = "gui";
-	public static final String CMD_COMPILE = "compile .+\\.txt";
-	public static final String CMD_RUN = "run";
-	public static final String CMD_DEBUG = "debug";
-	public static final String CMD_CLEAR = "clear";
-	public static final String ERROR_UNSUPPORTED_CMD = "This command is not supported.";
+	public static final String COMPILE = "COMPILE";
+	public static final String START = "START";
+	public static final String DEBUG = "DEBUG";
+	public static final String NEXT_INST = "NEXT_INST";
+	public static final String INPUT = "INPUT";
+	public static final String VALID_INT = "VALID_INT";
+	public static final String EDITOR = "EDITOR";
+	public static final String CONSOLE = "CONSOLE";
+	public static final String COMPILING_SUCCESSFUL = "COMPILING_SUCCESSFUL";
+	ResourceBundle messages = ResourceBundle.getBundle("ramses.MessagesBundle", Locale.getDefault());
 
 	// ///////////GUI ELEMENTE//////////
 	Container c;
@@ -37,6 +37,8 @@ public class MyApplet extends JApplet {
 	JPanel rightPanel;
 	JButton compile;
 	JButton start;
+	JButton debug;
+	JButton next;
 	JTable table;
 	JTextArea editor;
 	JTextArea console;
@@ -62,24 +64,29 @@ public class MyApplet extends JApplet {
 		editor = new JTextArea(40, 70);
 		editor.setLineWrap(true);
 		console = new JTextArea(10, 70);
-		console.setEditable(true);
+		console.setEditable(false);
 		console.setLineWrap(true);
-		console = new JTextArea(PROMPT);
-		((AbstractDocument) console.getDocument())
-				.setDocumentFilter(new NonEditableLineDocumentFilter());
-		console.select(PROMPT.length(), PROMPT.length());
-		compile = new JButton("Compile");
-		start = new JButton("Start");
+		PrintStream printStream = new PrintStream(new CustomOutputStream(console));
+		System.setOut(printStream);
+		System.setErr(printStream);
+		compile = new JButton(messages.getString(COMPILE));
+		start = new JButton(messages.getString(START));
+		debug = new JButton(messages.getString(DEBUG));
+		next = new JButton(messages.getString(NEXT_INST));
 		start.setEnabled(false);
+		debug.setEnabled(false);
+		next.setEnabled(false);
 
 		input = null;
 		data = new ArrayList<>();
 		inst = new ArrayList<>();
-
-		c.add(new JScrollPane(console));
-		/*
-		 * c.add(leftPanel); c.add(centerPanel); c.add(rightPanel);
-		 */
+		
+		initLeftPanel();
+		initListeners();
+		
+		c.add(leftPanel); 
+		c.add(centerPanel); 
+		c.add(rightPanel);
 	}
 
 	/**
@@ -88,33 +95,27 @@ public class MyApplet extends JApplet {
 	private void initLeftPanel() {
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
 		buttonPanel.add(compile);
+		buttonPanel.add(debug);
+		buttonPanel.add(next);
 		buttonPanel.add(start);
 
 		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
 		leftPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-		leftPanel.add(new JLabel("Editor:"));
+		leftPanel.add(new JLabel(messages.getString(EDITOR)));
 		leftPanel.add(new JScrollPane(editor));
-		leftPanel.add(new JLabel("Console:"));
+		leftPanel.add(new JLabel(messages.getString(CONSOLE)));
 		leftPanel.add(new JScrollPane(console));
 		leftPanel.add(buttonPanel);
 	}
-
-	/**
-	 * Initialisiert das mittlere Panel
-	 */
-	private void initCenterPanel() {
-		centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-		centerPanel.add(new JLabel("Input: "));
-		fillInputLabels();
-	}
-
+	
 	/**
 	 * Füllt das mittlere Panel mit den Input-eingaben
 	 */
 	private void fillInputLabels() {
 		// existierende Inputlabels löschen
 		centerPanel.removeAll();
-		centerPanel.add(new JLabel("Input:"));
+		centerPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+		centerPanel.add(new JLabel(messages.getString(INPUT)));
 		// neue Inputlabels einfügen
 		if (input != null) {
 			for (int i = 0; i < input.length; i++) {
@@ -149,13 +150,16 @@ public class MyApplet extends JApplet {
 					fillInputLabels();
 					centerPanel.revalidate();
 					start.setEnabled(true);
-					console.setText("Compiling successful.\n");
+					debug.setEnabled(true);
+					console.setText(messages.getString(COMPILING_SUCCESSFUL));
 				} catch (SyntaxErrorException e) {
+					debug.setEnabled(false);
 					start.setEnabled(false);
-					console.append(e + "\n");
+					System.out.println(e);
 				} catch (LogicalErrorException e) {
 					start.setEnabled(false);
-					console.append(e + "\n");
+					debug.setEnabled(false);
+					System.out.println(e);
 				}
 			}
 		});
@@ -166,6 +170,9 @@ public class MyApplet extends JApplet {
 			public void actionPerformed(ActionEvent ae) {
 				try {
 					console.setText("");
+					debug.setEnabled(false);
+					compile.setEnabled(false);
+					ramses.setDebug(false);
 					for (int i = 1; i < centerPanel.getComponentCount(); i++) {
 						if (centerPanel.getComponent(i) instanceof InputLabel) {
 							InputLabel label = (InputLabel) centerPanel
@@ -173,12 +180,67 @@ public class MyApplet extends JApplet {
 							label.setValue();
 						}
 					}
-					ramses.run();
+					ramses = new Ramses(input, output, inst);
+					ramses.start();
+					while(ramses.isLocked()){
+						//mehr polling als im erblühenden Schwarzwald
+					}
 					createTable();
+					synchronized(ramses){
+						ramses.notify();
+					}
+					debug.setEnabled(true);
+					compile.setEnabled(true);
 				} catch (NumberFormatException e) {
-					console.append(e + "\tEvery input needs a valid number\n");
+					System.out.println(e + "\t" + messages.getString(VALID_INT) + "\n");
 				} catch (LogicalErrorException e) {
-					console.append(e + "\n");
+					System.out.println(e);
+				}
+			}
+		});
+
+		debug.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					for (int i = 1; i < centerPanel.getComponentCount(); i++) {
+						if (centerPanel.getComponent(i) instanceof InputLabel) {
+							InputLabel label = (InputLabel) centerPanel
+									.getComponent(i);
+							label.setValue();
+						}
+						ramses = new Ramses(input, output, inst);
+					}
+				} catch (NumberFormatException e) {
+					System.out.println(e + "\t" + messages.getString(VALID_INT)
+							+ "\n");
+				} catch (LogicalErrorException e) {
+					System.out.println(e);
+				}
+				ramses.setDebug(true);
+				ramses.start();
+				debug.setEnabled(false);
+				start.setEnabled(false);
+				next.setEnabled(true);
+				next.doClick();
+			}
+		});
+
+		next.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(!ramses.isAlive()){
+					next.setEnabled(false);
+					debug.setEnabled(true);
+					start.setEnabled(true);
+				}
+				if(!ramses.isLocked()){
+					createTable();
+					synchronized(ramses){
+						ramses.notify();
+					}
 				}
 			}
 		});
@@ -188,133 +250,36 @@ public class MyApplet extends JApplet {
 	 * Erstellt einen JTable anhand der Matrix aus RAMSES
 	 */
 	private void createTable() {
-		matrix = ramses.getTable();
+		matrix = new ArrayList<>(ramses.getTable());
 		String[] columnNames = matrix.get(0).toArray(
 				new String[matrix.get(0).size()]);
 		matrix.remove(0);
-		Object[][] data = new Object[matrix.size()][columnNames.length];
+		final Object[][] data = new Object[matrix.size()][columnNames.length];
 		for (int i = 0; i < matrix.size(); i++) {
 			for (int j = 0; j < columnNames.length; j++) {
 				data[i][j] = matrix.get(i).get(j);
 			}
 		}
-		table = new JTable(data, columnNames);
-		rightPanel.removeAll();
-		rightPanel.add(new JScrollPane(table), BorderLayout.CENTER);
-		rightPanel.revalidate();
-	}
-
-	class NonEditableLineDocumentFilter extends DocumentFilter {
-		private boolean next = false;
-		private boolean in = false;
-		private int value = 0;
-
-		@Override
-		public void insertString(DocumentFilter.FilterBypass fb, int offset,
-				String string, AttributeSet attr) throws BadLocationException {
-			if (string == null) {
-				return;
-			} else {
-				replace(fb, offset, 0, string, attr);
-			}
-		}
-
-		@Override
-		public void remove(DocumentFilter.FilterBypass fb, int offset,
-				int length) throws BadLocationException {
-			replace(fb, offset, length, "", null);
-		}
-
-		@Override
-		public void replace(DocumentFilter.FilterBypass fb, int offset,
-				int length, String text, AttributeSet attrs)
-				throws BadLocationException {
-			Document doc = fb.getDocument();
-			Element root = doc.getDefaultRootElement();
-			int count = root.getElementCount();
-			int index = root.getElementIndex(offset);
-			Element cur = root.getElement(index);
-			int promptPosition = cur.getStartOffset() + PROMPT.length();
-			// As Reverend Gonzo says:
-			if (index == count - 1 && offset - promptPosition >= 0) {
-				if (text.equals("\n")) {
-					String cmd = doc.getText(promptPosition, offset
-							- promptPosition);
-					if (cmd.isEmpty()) {
-						text = "\n" + PROMPT;
-					} else {
-						parseCmd(cmd);
+		table = new JTable(data, columnNames){
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
+				Component c = super.prepareRenderer(renderer, row, column);
+				if(this.isCellSelected(row, column))
+					c.setBackground(this.getSelectionBackground());
+				else{
+					if(data[row][column].equals("")){
+						c.setBackground(this.getBackground());
+					}else if(column == 0){
+						c.setBackground(Color.lightGray);
+					}else{
+						c.setBackground(Color.orange);
 					}
 				}
-				fb.replace(offset, length, text, attrs);
+				return c;
 			}
-		}
-
-		private void parseCmd(String cmd) {
-			if (cmd.matches(CMD_GUI)) {
-				c.removeAll();
-				initLeftPanel();
-				initCenterPanel();
-				initListeners();
-				c.add(leftPanel);
-				c.add(centerPanel);
-				c.add(rightPanel);
-				if (ramses != null)
-					start.setEnabled(true);
-				c.revalidate();
-			} else if (cmd.matches(CMD_COMPILE)) {
-				compile(cmd);
-			} else if (cmd.matches(CMD_CLEAR)) {
-				((AbstractDocument) console.getDocument())
-						.setDocumentFilter(null);
-				console.setText(PROMPT);
-				((AbstractDocument) console.getDocument())
-						.setDocumentFilter(new NonEditableLineDocumentFilter());
-			} else if (cmd.matches(CMD_RUN)) {
-				in = true;
-				for (int i = 0; i < input.length; i++) {
-					console.append("s[" + input[i].getIndex() + "]\n" + PROMPT);
-					next = false;
-					// while(!next){};
-					input[i].setValue(value);
-				}
-				in = false;
-
-			} else if (in && cmd.matches("-?\\d+")) {
-				value = Integer.parseInt(cmd);
-				next = true;
-			} else {
-				console.append(ERROR_UNSUPPORTED_CMD + "\n" + PROMPT);
-			}
-		}
-
-		private void compile(String cmd) {
-			data = new ArrayList<>();
-			inst = new ArrayList<Instruction>();
-			String path = cmd.replace("compile ", "");
-
-			try (BufferedReader br = new BufferedReader(new FileReader(
-					new File(path)))) {
-				while (br.ready()) {
-					data.add(br.readLine());
-				}
-			} catch (IOException e) {
-				console.append("\n" + e);
-			}
-			try {
-				input = Parser.parseInput(data.get(0));
-				output = Parser.parseOutput(data.get(1));
-				for (int i = 0; i < data.size() - 2; i++) {
-					inst.add(Parser.parseInst(i, data.get(i + 2)));
-				}
-				ramses = new Ramses(input, output, inst);
-				console.append(PROMPT);
-			} catch (SyntaxErrorException e) {
-				console.append("\n" + e);
-			} catch (LogicalErrorException e) {
-				console.append("\n" + e);
-			}
-		}
+		};
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		rightPanel.removeAll();
+		rightPanel.add(new JScrollPane(table,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+		rightPanel.revalidate();
 	}
-
 }

@@ -1,6 +1,8 @@
 package ramses;
 
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 
 /**
@@ -8,14 +10,14 @@ import java.util.Scanner;
  * @author Lukas
  *
  */
-public class Ramses {
+public class Ramses extends Thread{
 	public static final int MAX_MEM = 255;
 	public static final int MAX_INDEX = 5;
-	public static final String OUTPUT = "#OUTPUT#";
-	public static final String ERROR_DIVISION_BY_ZERO = "Division by Zero";
-	public static final String ERROR_INDEX_OUT_OF_BOUNDS = "Index out of bounds";
-	public static final String ERROR_MEMORY_OUT_OF_BOUNDS = "Memory out of bounds";
-	public static final String ERROR_JUMP_INVALID = "Jump Invalid";
+	public static final String OUTPUT = "OUTPUT";
+	public static final String ERROR_DIVISION_BY_ZERO = "ERROR_DIVISION_BY_ZERO";
+	public static final String ERROR_INDEX_OUT_OF_BOUNDS = "ERROR_INDEX_OUT_OF_BOUNDS";
+	public static final String ERROR_MEMORY_OUT_OF_BOUNDS = "ERROR_MEMORY_OUT_OF_BOUNDS";
+	public static final String ERROR_JUMP_INVALID = "ERROR_JUMP_INVALID";
 	
 	public static final String A_ADD = "a <- a + ";
 	public static final String A_SUB = "a <- a - ";
@@ -41,6 +43,11 @@ public class Ramses {
 	private int[] output;
 	/** Tabelle */
 	private ArrayList<ArrayList<String>> table;
+	/** debug */
+	private boolean debug = false;
+	/** lock */
+	private boolean locked = true;
+	ResourceBundle messages = ResourceBundle.getBundle("ramses.MessagesBundle", Locale.getDefault());
 	
 	/**
 	 * Konstruktor
@@ -69,7 +76,7 @@ public class Ramses {
 		table = new ArrayList<ArrayList<String>>();
 		ArrayList<String> header = new ArrayList<>();
 		table.add(header);
-		header.add("Instruction");
+		header.add(messages.getString("INSTRUCTION"));
 		header.add("a");
 		
 		//Finde größten Index und erstelle Array mit diesem als max
@@ -92,22 +99,41 @@ public class Ramses {
 	
 	/**
 	 * Startfunktion, um den Programmcode auszuführen
+	 * 
 	 * @throws LogicalErrorException
 	 */
-	public void run() throws LogicalErrorException{
-		counter = 0;
-		iP = 0;
-		a = 0;
-		initS();
-		i = new int[MAX_INDEX];
-		process(p.get(0));
+	public void run() {
+		synchronized (this) {
+			try {
+				if(!debug)
+					locked = true;
+				counter = 0;
+				iP = 0;
+				a = 0;
+				initS();
+				i = new int[MAX_INDEX];
+				process(p.get(0));
+				if(!debug){
+					sleep(100);//TODO: Lock klasse
+					locked = false;
+					wait();
+				}
+			} catch (LogicalErrorException e) {
+				System.out.println(e);
+			} catch (InterruptedException e) {
+				System.out.println(e);
+			}
+		}
 	}
 	
 	/**
 	 *  Hauptfunktion zum verarbeiten der Instruktion
 	 * @param inst Die zu verarbeitende Instruktion
+	 * @throws LogicalErrorException 
 	 */
-	private void process(Instruction inst){
+	private synchronized void process(Instruction inst) throws LogicalErrorException{
+		if(debug)
+			locked = true;
 		iP++;
 		counter++;
 		try {		//Die Instruktion mit der richtigen Funktion aufrufen
@@ -132,6 +158,7 @@ public class Ramses {
 				break;
 			case HALT:
 				halt(inst);
+				locked = false;
 				return;
 			case IDX_DEC:
 				idxDec(inst);
@@ -206,8 +233,14 @@ public class Ramses {
 				break;
 			}
 			//nächste Instruktion starten
+			if(debug){
+				locked = false;
+				wait();
+			}
 			process(p.get(iP));
 		} catch (RuntimeException e) {
+			System.out.println(e);
+		} catch (InterruptedException e) {
 			System.out.println(e);
 		}
 	}
@@ -242,8 +275,9 @@ public class Ramses {
 	 * a <- a + mmem
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void addAMmem(Instruction inst){
+	private void addAMmem(Instruction inst) throws LogicalErrorException{
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			a += s[i[inst.getP0()]+inst.getP1()];
 			String out = p.indexOf(inst) +": " + A_ADD + "s[i" + inst.getP0() + "+" + inst.getP1() + "]"; 
@@ -251,15 +285,16 @@ public class Ramses {
 			fillTable("a", Integer.toString(a));
 		}
 		else
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 	
 	/**
 	 * a <- a div imm
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void divAImm(Instruction inst){
+	private void divAImm(Instruction inst) throws LogicalErrorException{
 		if (inst.getP0() != 0){
 			a = a / inst.getP0();
 			String out = p.indexOf(inst) + ": " + A_DIV + inst.getP0();
@@ -267,17 +302,18 @@ public class Ramses {
 			fillTable("a", Integer.toString(a));
 		}
 		else
-			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
 	}
 	
 	/**
 	 * a <- a div mem
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void divAMem(Instruction inst){
+	private void divAMem(Instruction inst) throws LogicalErrorException{
 		if (s[inst.getP0()] == 0)
-			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
 		a = a / s[inst.getP0()];
 		String out = p.indexOf(inst) +": " + A_DIV + "s[" + inst.getP0() + "]";
 		addRow(out);
@@ -288,10 +324,11 @@ public class Ramses {
 	 * a <- a div mmem
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void divAMmem(Instruction inst){
+	private void divAMmem(Instruction inst) throws LogicalErrorException{
 		if (s[inst.getP0()] == 0)
-			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			a = a / s[i[inst.getP0()]+inst.getP1()];
 			String out = p.indexOf(inst) +": " + A_DIV + "s[i" + inst.getP0() + "+" + inst.getP1() + "]"; 
@@ -299,7 +336,7 @@ public class Ramses {
 			fillTable("a", Integer.toString(a));
 		}
 		else
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 	
 	/**
@@ -330,8 +367,9 @@ public class Ramses {
 	 * a <- a sub mmem
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void subAMmem(Instruction inst){
+	private void subAMmem(Instruction inst) throws LogicalErrorException{
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			a -= s[i[inst.getP0()]+inst.getP1()];
 			String out = p.indexOf(inst) +": " + A_SUB + "s[i" + inst.getP0() + "+" + inst.getP1() + "]"; 
@@ -339,15 +377,16 @@ public class Ramses {
 			fillTable("a", Integer.toString(a));
 		}
 		else
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 	
 	/**
 	 * a <- a mod imm
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void modAImm(Instruction inst){
+	private void modAImm(Instruction inst) throws LogicalErrorException{
 		if (inst.getP0() != 0){
 			a = a % inst.getP0();
 			String out = p.indexOf(inst) + ": " + A_MOD + inst.getP0();
@@ -355,15 +394,16 @@ public class Ramses {
 			fillTable("a", Integer.toString(a));
 		}
 		else
-			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
 	}
 	
 	/**
 	 * a <- a mod mem
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void modAMem(Instruction inst){
+	private void modAMem(Instruction inst) throws LogicalErrorException{
 		if (s[inst.getP0()] != 0){
 			a = a % s[inst.getP0()];
 			String out = p.indexOf(inst) +": " + A_MOD + "s[" + inst.getP0() + "]";
@@ -371,17 +411,18 @@ public class Ramses {
 			fillTable("a", Integer.toString(a));
 		}
 		else
-			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
 	}
 	
 	/**
 	 * a <- a mod mmem
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void modAMmem(Instruction inst){
+	private void modAMmem(Instruction inst) throws LogicalErrorException{
 		if(s[i[inst.getP0()]+inst.getP1()] == 0)
-			throw new RuntimeException(ERROR_DIVISION_BY_ZERO);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			a = a % s[i[inst.getP0()]+inst.getP1()];
 			String out = p.indexOf(inst) +": " + A_MOD + "s[i" + inst.getP0() + "+" + inst.getP1() + "]"; 
@@ -389,7 +430,7 @@ public class Ramses {
 			fillTable("a", Integer.toString(a));
 		}
 		else
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 	
 	/**
@@ -420,8 +461,9 @@ public class Ramses {
 	 * a <- a * mmem
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void mulAMmem(Instruction inst){
+	private void mulAMmem(Instruction inst) throws LogicalErrorException{
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			a = a * s[i[inst.getP0()]+inst.getP1()];
 			String out = p.indexOf(inst) +": " + A_MUL + "s[i" + inst.getP0() + "+" + inst.getP1() + "]"; 
@@ -429,7 +471,7 @@ public class Ramses {
 			fillTable("a", Integer.toString(a));
 		}	
 		else
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 	
 ///////////////////////////////HALT INSTRUKTION////////////////////////////////
@@ -452,8 +494,9 @@ public class Ramses {
 	 * i <- i - 1
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void idxDec(Instruction inst){
+	private void idxDec(Instruction inst) throws LogicalErrorException{
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			i[inst.getP0()]--;
 			String out = p.indexOf(inst) + ": i" + inst.getP0() + " <- i" + inst.getP0() + " - 1";
@@ -461,15 +504,16 @@ public class Ramses {
 			fillTable("i"+inst.getP0(),Integer.toString(i[inst.getP0()]));
 		}
 		else
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 	
 	/**
 	 * i <- i + 1
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void idxInc(Instruction inst){
+	private void idxInc(Instruction inst) throws LogicalErrorException{
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			i[inst.getP0()]++;
 			String out = p.indexOf(inst) + ": i" + inst.getP0() + " <- i" + inst.getP0() + " + 1";
@@ -477,7 +521,7 @@ public class Ramses {
 			fillTable("i"+inst.getP0(),Integer.toString(i[inst.getP0()]));
 		}
 		else
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 
 	
@@ -487,10 +531,11 @@ public class Ramses {
 	 * reg <- imm
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void ldRegImm(Instruction inst){
+	private void ldRegImm(Instruction inst) throws LogicalErrorException{
 		if(inst.getP0() < -1 || inst.getP0() > i.length)
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 		
 		String out;
 		String reg = null;
@@ -515,10 +560,11 @@ public class Ramses {
 	 * reg <- mem
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void ldRegMem(Instruction inst){
+	private void ldRegMem(Instruction inst) throws LogicalErrorException{
 		if(inst.getP0() < -1 || inst.getP0() > i.length)
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 		
 		String out;
 		String reg = null;
@@ -543,8 +589,9 @@ public class Ramses {
 	 * a <- mmem
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void ldAMmem(Instruction inst){
+	private void ldAMmem(Instruction inst) throws LogicalErrorException{
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			a = s[i[inst.getP0()]+inst.getP1()];
 			String out = p.indexOf(inst) + ": a <- s[i" + inst.getP0() + "+" + inst.getP1() + "]";
@@ -552,17 +599,18 @@ public class Ramses {
 			fillTable("a", Integer.toString(a));
 		}
 		else
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 	
 	/**
 	 * mem <- reg
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void ldMemReg(Instruction inst){
+	private void ldMemReg(Instruction inst) throws LogicalErrorException{
 		if(inst.getP0() < -1 || inst.getP0() > i.length)
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 		
 		String out;
 		String reg = null;
@@ -588,8 +636,9 @@ public class Ramses {
 	 * mmem <- a
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void ldMmemA(Instruction inst){
+	private void ldMmemA(Instruction inst) throws LogicalErrorException{
 		if (inst.getP0() >= 0 && inst.getP0() < i.length){
 			s[i[inst.getP0()]+inst.getP1()] = a;
 			String out = p.indexOf(inst) + ": s[i" + inst.getP0() + "+" + inst.getP1() + "] <- a";
@@ -597,7 +646,7 @@ public class Ramses {
 			fillTable("s[i" + inst.getP0() + "+" + inst.getP1() + "]", Integer.toString(s[i[inst.getP0()]+inst.getP1()]));
 		}
 		else
-			throw new RuntimeException(ERROR_INDEX_OUT_OF_BOUNDS);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 	
 ///////////////////////////////JUMP INSTRUKTIONEN//////////////////////////////
@@ -606,22 +655,24 @@ public class Ramses {
 	 * jump x
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void jump(Instruction inst){
+	private void jump(Instruction inst) throws LogicalErrorException{
 		if (inst.getP0() >= 0 && inst.getP0() < p.size()){
 			iP = inst.getP0();
 			addRow(p.indexOf(inst) + ": jump " + inst.getP0());
 		}	
 		else
-			throw new RuntimeException(ERROR_JUMP_INVALID);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
 	}
 	
 	/**
 	 * if reg = 0 then jump x
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void jumpEq(Instruction inst){
+	private void jumpEq(Instruction inst) throws LogicalErrorException{
 		String out;
 		String reg = null;
 		String regValue = null;
@@ -640,7 +691,7 @@ public class Ramses {
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
-			throw new RuntimeException(ERROR_JUMP_INVALID);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
 		
 		out = p.indexOf(inst) + ": if " + reg + " = 0 then jump " + inst.getP1();
 		addRow(out);
@@ -651,8 +702,9 @@ public class Ramses {
 	 * if reg >= 0 then jump x
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void jumpGe(Instruction inst){
+	private void jumpGe(Instruction inst) throws LogicalErrorException{
 		String out;
 		String reg = null;
 		String regValue = null;
@@ -671,7 +723,7 @@ public class Ramses {
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
-			throw new RuntimeException(ERROR_JUMP_INVALID);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
 		
 		out = p.indexOf(inst) + ": if " + reg + " >= 0 then jump " + inst.getP1();
 		addRow(out);
@@ -682,8 +734,9 @@ public class Ramses {
 	 * if reg > 0 then jump x
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void jumpGt(Instruction inst){
+	private void jumpGt(Instruction inst) throws LogicalErrorException{
 		String out;
 		String reg = null;
 		String regValue = null;
@@ -702,7 +755,7 @@ public class Ramses {
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
-			throw new RuntimeException(ERROR_JUMP_INVALID);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
 		
 		out = p.indexOf(inst) + ": if " + reg + " > 0 then jump " + inst.getP1();
 		addRow(out);
@@ -713,8 +766,9 @@ public class Ramses {
 	 * if reg <= 0 then jump x
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void jumpLe(Instruction inst){
+	private void jumpLe(Instruction inst) throws LogicalErrorException{
 		String out;
 		String reg = null;
 		String regValue = null;
@@ -733,7 +787,7 @@ public class Ramses {
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
-			throw new RuntimeException(ERROR_JUMP_INVALID);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
 		
 		out = p.indexOf(inst) + ": if " + reg + " <= 0 then jump " + inst.getP1();
 		addRow(out);
@@ -744,8 +798,9 @@ public class Ramses {
 	 * if reg < 0 then jump x
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void jumpLt(Instruction inst){
+	private void jumpLt(Instruction inst) throws LogicalErrorException{
 		String out;
 		String reg = null;
 		String regValue = null;
@@ -764,7 +819,7 @@ public class Ramses {
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
-			throw new RuntimeException(ERROR_JUMP_INVALID);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
 		
 		out = p.indexOf(inst) + ": if " + reg + " < 0 then jump " + inst.getP1();
 		addRow(out);
@@ -775,8 +830,9 @@ public class Ramses {
 	 * if reg != 0 then jump x
 	 * @param inst
 	 * @return
+	 * @throws LogicalErrorException 
 	 */
-	private void jumpNe(Instruction inst){
+	private void jumpNe(Instruction inst) throws LogicalErrorException{
 		String out;
 		String reg = null;
 		String regValue = null;
@@ -795,7 +851,7 @@ public class Ramses {
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		else
-			throw new RuntimeException(ERROR_JUMP_INVALID);
+			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
 		
 		out = p.indexOf(inst) + ": if " + reg + " != 0 then jump " + inst.getP1();
 		addRow(out);
@@ -853,5 +909,17 @@ public class Ramses {
 	 */
 	public ArrayList<ArrayList<String>> getTable(){
 		return table;
+	}
+	
+	public boolean isDebug() {
+		return debug;
+	}
+
+	public void setDebug(boolean debug) {
+		this.debug = debug;
+	}
+
+	public boolean isLocked() {
+		return locked;
 	}
 }

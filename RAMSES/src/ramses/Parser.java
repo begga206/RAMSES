@@ -1,6 +1,8 @@
 package ramses;
 
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 
 /**
@@ -14,16 +16,16 @@ public class Parser {
 	public static final String COLON = ":";
 	public static final String COMMA = ",";
 	//ERROR MESSAGES//
-	public static final String ERROR_EXCPECTED_COLON = "Expected ':' after Instruction Pointer";
-	public static final String ERROR_INSTPTR_CONTAINS_LETTER = "Instruction Pointer cannot contain a letter";
-	public static final String ERROR_INST_UNKNOWN = "The following instruction is not known: ";
-	public static final String ERROR_WRONG_INSPTR = "Given Instruction Pointer was not expected";
-	public static final String ERROR_WRONG_FORMAT = "The line does not match with any known format";
-	public static final String ERROR_INVALID_OPERATOR = "The operator is invalid";
-	public static final String ERROR_INPUT_KEYWORD = "The keyword 'INPUT' is missing or written wrong.";
-	public static final String ERROR_INPUT_FORMAT = "Unsupported INPUT format. Expected: s[x] | s[x]...s[y] | s[x]=y . Got: ";
-	public static final String ERROR_OUTPUT_KEYWORD = "The keyword 'OUTPUT' is missing or written wrong.";
-	public static final String ERROR_OUTPUT_FORMAT = "Unsupported OUTPUT format. Expected: s[x] | s[x]...s[y] . Got: ";
+	public static final String ERROR_EXCPECTED_COLON = "ERROR_EXCPECTED_COLON";
+	public static final String ERROR_INSTPTR_CONTAINS_LETTER = "ERROR_INSTPTR_CONTAINS_LETTER";
+	public static final String ERROR_INST_UNKNOWN = "ERROR_INST_UNKNOWN";
+	public static final String ERROR_WRONG_INSPTR = "ERROR_WRONG_INSPTR";
+	public static final String ERROR_WRONG_FORMAT = "ERROR_WRONG_FORMAT";
+	public static final String ERROR_INVALID_OPERATOR = "ERROR_INVALID_OPERATOR";
+	public static final String ERROR_INPUT_KEYWORD = "ERROR_INPUT_KEYWORD";
+	public static final String ERROR_INPUT_FORMAT = "ERROR_INPUT_FORMAT";
+	public static final String ERROR_OUTPUT_KEYWORD = "ERROR_OUTPUT_KEYWORD";
+	public static final String ERROR_OUTPUT_FORMAT = "ERROR_OUTPUT_FORMAT";
 
 	//CASES//
 	public static final String CASE_HALT = "HALT";
@@ -78,13 +80,16 @@ public class Parser {
 	
 	private static int instPtr;
 	
+	static ResourceBundle messages;
+	
 	public static Input[] parseInput(String inputLine) throws SyntaxErrorException{
+		messages = ResourceBundle.getBundle("ramses.MessagesBundle", Locale.getDefault());
 		ArrayList<Input> input = new ArrayList<>();
 		ArrayList<String> tokens = new ArrayList<>();
 		Scanner sc = new Scanner(inputLine);
-		if(!sc.next().matches(PATTERN_INPUT_KEYWORD)) {
+		if(!sc.next().matches(messages.getString(PATTERN_INPUT_KEYWORD))) {
 			sc.close();
-			throw new SyntaxErrorException(-2, ERROR_INPUT_KEYWORD);
+			throw new SyntaxErrorException(-2, messages.getString(ERROR_INPUT_KEYWORD));
 		}
 		sc.useDelimiter(COMMA);
 		while(sc.hasNext())
@@ -107,7 +112,7 @@ public class Parser {
 				String value = token.replaceAll("s\\[\\d+\\]\\s?=\\s?-?(\\d+)", "$1");
 				input.add(new Input(Integer.parseInt(index),Integer.parseInt(value)));
 			}else
-				throw new SyntaxErrorException(-2, ERROR_INPUT_FORMAT + token);
+				throw new SyntaxErrorException(-2, messages.getString(messages.getString(ERROR_INPUT_FORMAT)) + token);
 		}
 		Input[] n = new Input[input.size()];
 		for(int i = 0; i < n.length; i++){
@@ -122,7 +127,7 @@ public class Parser {
 		Scanner sc = new Scanner(outputLine);
 		if(!sc.next().matches(PATTERN_OUTPUT_KEYWORD)) {
 			sc.close();
-			throw new SyntaxErrorException(-1, ERROR_OUTPUT_KEYWORD);
+			throw new SyntaxErrorException(-1, messages.getString(messages.getString(ERROR_OUTPUT_KEYWORD)));
 		}
 		sc.useDelimiter(COMMA);
 		while(sc.hasNext())
@@ -141,7 +146,7 @@ public class Parser {
 					output.add(i);
 				}
 			}else
-				throw new SyntaxErrorException(-1, ERROR_INPUT_FORMAT + token);
+				throw new SyntaxErrorException(-1, messages.getString(ERROR_INPUT_FORMAT) + token);
 		}
 		int[] n = new int[output.size()];
 		for(int i = 0; i < n.length; i++){
@@ -181,7 +186,7 @@ public class Parser {
 			return new Instruction(InstructionTag.HALT);
 		if(instLine.matches(PATTERN_INDEX_INST))
 			return parseIndexInst(instLine, tokens);
-		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
+		throw new SyntaxErrorException(instPtr, messages.getString(ERROR_WRONG_FORMAT));
 	}
 	
 	/**
@@ -210,7 +215,7 @@ public class Parser {
 			case CASE_NE:
 				return new Instruction(InstructionTag.JUMP_NE, p0, p1);
 			default:
-				throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + tokens.get(INDEX_COND_JUMP_IDENT)); 
+				throw new SyntaxErrorException(instPtr,messages.getString(ERROR_INVALID_OPERATOR) + tokens.get(INDEX_COND_JUMP_IDENT)); 
 		}
 	}
 	
@@ -267,7 +272,7 @@ public class Parser {
 					return new Instruction(InstructionTag.MOD_A_IMM,p[0]);
 			}
 		}
-		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
+		throw new SyntaxErrorException(instPtr, messages.getString(ERROR_WRONG_FORMAT));
 	}
 
 	/**
@@ -298,7 +303,7 @@ public class Parser {
 			return new Instruction(InstructionTag.LD_REG_MEM,p[0],p[1]);
 		if(dest.matches(PATTERN_MEM) && op1.matches(PATTERN_REG))
 			return new Instruction(InstructionTag.LD_MEM_REG,p[0],p[1]);
-		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT);
+		throw new SyntaxErrorException(instPtr, messages.getString(ERROR_WRONG_FORMAT));
 	}
 
 	/**
@@ -321,7 +326,7 @@ public class Parser {
 			case CASE_SUB:
 				return new Instruction(InstructionTag.IDX_DEC, p0);
 			default:
-				throw new SyntaxErrorException(instPtr,ERROR_INVALID_OPERATOR + TOKEN + tokens.get(INDEX_OPERATOR));
+				throw new SyntaxErrorException(instPtr,messages.getString(ERROR_INVALID_OPERATOR) + TOKEN + tokens.get(INDEX_OPERATOR));
 		}
 	}
 	
@@ -341,7 +346,7 @@ public class Parser {
 				ops[1] = Integer.parseInt(s[1]);
 			return ops;
 		}
-		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + token);
+		throw new SyntaxErrorException(instPtr, messages.getString(ERROR_WRONG_FORMAT) + TOKEN + token);
 	}
 	
 	/**
@@ -370,6 +375,6 @@ public class Parser {
 			op = Integer.parseInt(token);
 			return op;
 		}
-		throw new SyntaxErrorException(instPtr, ERROR_WRONG_FORMAT + TOKEN + token);
+		throw new SyntaxErrorException(instPtr, messages.getString(ERROR_WRONG_FORMAT) + TOKEN + token);
 	}
 }
