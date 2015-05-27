@@ -87,7 +87,7 @@ public class Parser {
 		ArrayList<Input> input = new ArrayList<>();
 		ArrayList<String> tokens = new ArrayList<>();
 		Scanner sc = new Scanner(inputLine);
-		if(!sc.next().matches(messages.getString(PATTERN_INPUT_KEYWORD))) {
+		if(!sc.next().matches(PATTERN_INPUT_KEYWORD)) {
 			sc.close();
 			throw new SyntaxErrorException(-2, messages.getString(ERROR_INPUT_KEYWORD));
 		}
