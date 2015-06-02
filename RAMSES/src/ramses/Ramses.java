@@ -3,14 +3,14 @@ package ramses;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.Scanner;
 
 /**
  * Ramsesklasse emuliert eine RAM
+ * 
  * @author Lukas
  *
  */
-public class Ramses extends Thread{
+public class Ramses extends Thread {
 	public static final int MAX_MEM = 255;
 	public static final int MAX_INDEX = 5;
 	public static final String OUTPUT = "OUTPUT";
@@ -18,13 +18,13 @@ public class Ramses extends Thread{
 	public static final String ERROR_INDEX_OUT_OF_BOUNDS = "ERROR_INDEX_OUT_OF_BOUNDS";
 	public static final String ERROR_MEMORY_OUT_OF_BOUNDS = "ERROR_MEMORY_OUT_OF_BOUNDS";
 	public static final String ERROR_JUMP_INVALID = "ERROR_JUMP_INVALID";
-	
+
 	public static final String A_ADD = "a <- a + ";
 	public static final String A_SUB = "a <- a - ";
 	public static final String A_MUL = "a <- a * ";
 	public static final String A_DIV = "a <- a div ";
 	public static final String A_MOD = "a <- a mod ";
-	
+
 	/** Instruction Counter */
 	private static int counter;
 	/** Instruction Pointer */
@@ -47,16 +47,19 @@ public class Ramses extends Thread{
 	private boolean debug = false;
 	/** lock */
 	private boolean locked = true;
-	ResourceBundle messages = ResourceBundle.getBundle("ramses.MessagesBundle", Locale.getDefault());
-	
+	ResourceBundle messages = ResourceBundle.getBundle("ramses.MessagesBundle",
+			Locale.getDefault());
+
 	/**
 	 * Konstruktor
+	 * 
 	 * @param input
 	 * @param output
 	 * @param p
 	 * @throws LogicalErrorException
 	 */
-	public Ramses(Input[] input, int[] output, ArrayList<Instruction> p) throws LogicalErrorException{
+	public Ramses(Input[] input, int[] output, ArrayList<Instruction> p)
+			throws LogicalErrorException {
 		counter = 0;
 		this.input = input;
 		this.output = output;
@@ -65,38 +68,40 @@ public class Ramses extends Thread{
 		i = new int[MAX_INDEX];
 		table = new ArrayList<ArrayList<String>>();
 	}
-	
+
 	/**
 	 * Initialisiert den Datenspeicher
+	 * 
 	 * @throws LogicalErrorException
 	 */
-	private void initS() throws LogicalErrorException{
+	private void initS() throws LogicalErrorException {
 		int maxIndex = 0;
-		//Initialisiere die Programmtabelle und füge Header hinzu
+		// Initialisiere die Programmtabelle und füge Header hinzu
 		table = new ArrayList<ArrayList<String>>();
 		ArrayList<String> header = new ArrayList<>();
 		table.add(header);
 		header.add(messages.getString("INSTRUCTION"));
 		header.add("a");
-		
-		//Finde größten Index und erstelle Array mit diesem als max
-		for(int i = 0; i < output.length; i++){
-			if(output[i] > maxIndex)
+
+		// Finde größten Index und erstelle Array mit diesem als max
+		for (int i = 0; i < output.length; i++) {
+			if (output[i] > maxIndex)
 				maxIndex = output[i];
-			fillTable("s["+output[i]+"]", "s["+output[i]+"]");
+			fillTable("s[" + output[i] + "]", "s[" + output[i] + "]");
 		}
-		for(int j = 0; j < input.length; j++){
-			if(input[j].getIndex() > maxIndex)
+		for (int j = 0; j < input.length; j++) {
+			if (input[j].getIndex() > maxIndex)
 				maxIndex = input[j].getIndex();
-			fillTable("s["+input[j].getIndex()+"]", "s["+input[j].getIndex()+"]");
-		}	
-		s = new int[maxIndex+1];
-		for(int i = 0; i < input.length; i++){
-			if(input[i].hasValue())
+			fillTable("s[" + input[j].getIndex() + "]",
+					"s[" + input[j].getIndex() + "]");
+		}
+		s = new int[maxIndex + 1];
+		for (int i = 0; i < input.length; i++) {
+			if (input[i].hasValue())
 				s[input[i].getIndex()] = input[i].getValue();
 		}
 	}
-	
+
 	/**
 	 * Startfunktion, um den Programmcode auszuführen
 	 * 
@@ -105,7 +110,7 @@ public class Ramses extends Thread{
 	public void run() {
 		synchronized (this) {
 			try {
-				if(!debug)
+				if (!debug)
 					locked = true;
 				counter = 0;
 				iP = 0;
@@ -113,8 +118,8 @@ public class Ramses extends Thread{
 				initS();
 				i = new int[MAX_INDEX];
 				process(p.get(0));
-				if(!debug){
-					sleep(100);//TODO: Lock klasse
+				if (!debug) {
+					sleep(100);// TODO: Lock klasse
 					locked = false;
 					wait();
 				}
@@ -125,19 +130,22 @@ public class Ramses extends Thread{
 			}
 		}
 	}
-	
+
 	/**
-	 *  Hauptfunktion zum verarbeiten der Instruktion
-	 * @param inst Die zu verarbeitende Instruktion
-	 * @throws LogicalErrorException 
+	 * Hauptfunktion zum verarbeiten der Instruktion
+	 * 
+	 * @param inst
+	 *            Die zu verarbeitende Instruktion
+	 * @throws LogicalErrorException
 	 */
-	private synchronized void process(Instruction inst) throws LogicalErrorException{
-		if(debug)
+	private synchronized void process(Instruction inst)
+			throws LogicalErrorException {
+		if (debug)
 			locked = true;
 		iP++;
 		counter++;
-		try {		//Die Instruktion mit der richtigen Funktion aufrufen
-			switch(inst.getInstTag()){
+		try { // Die Instruktion mit der richtigen Funktion aufrufen
+			switch (inst.getInstTag()) {
 			case ADD_A_IMM:
 				addAImm(inst);
 				break;
@@ -232,8 +240,8 @@ public class Ramses extends Thread{
 			default:
 				break;
 			}
-			//nächste Instruktion starten
-			if(debug){
+			// nächste Instruktion starten
+			if (debug) {
 				locked = false;
 				wait();
 			}
@@ -244,673 +252,727 @@ public class Ramses extends Thread{
 			System.out.println(e);
 		}
 	}
-	
-////////////////////ARITHMETIK INSTRUKTIONEN///////////////////////////////////
-	
+
+	// //////////////////ARITHMETIK
+	// INSTRUKTIONEN///////////////////////////////////
+
 	/**
 	 * a <- a + imm
+	 * 
 	 * @param inst
 	 * @return
 	 */
-	private void addAImm(Instruction inst){
+	private void addAImm(Instruction inst) {
 		a += inst.getP0();
 		String out = p.indexOf(inst) + ": " + A_ADD + inst.getP0();
 		addRow(out);
 		fillTable("a", Integer.toString(a));
 	}
-	
+
 	/**
 	 * a <- a + mem
+	 * 
 	 * @param inst
 	 * @return
 	 */
-	private void addAMem(Instruction inst){
+	private void addAMem(Instruction inst) {
 		a += s[inst.getP0()];
-		String out = p.indexOf(inst) +": " + A_ADD + "s[" + inst.getP0() + "]";
+		String out = p.indexOf(inst) + ": " + A_ADD + "s[" + inst.getP0() + "]";
 		addRow(out);
 		fillTable("a", Integer.toString(a));
 	}
-	
+
 	/**
 	 * a <- a + mmem
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void addAMmem(Instruction inst) throws LogicalErrorException{
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			a += s[i[inst.getP0()]+inst.getP1()];
-			String out = p.indexOf(inst) +": " + A_ADD + "s[i" + inst.getP0() + "+" + inst.getP1() + "]"; 
+	private void addAMmem(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			a += s[i[inst.getP0()] + inst.getP1()];
+			String out = p.indexOf(inst) + ": " + A_ADD + "s[i" + inst.getP0()
+					+ "+" + inst.getP1() + "]";
 			addRow(out);
 			fillTable("a", Integer.toString(a));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
-	
+
 	/**
 	 * a <- a div imm
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void divAImm(Instruction inst) throws LogicalErrorException{
-		if (inst.getP0() != 0){
+	private void divAImm(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() != 0) {
 			a = a / inst.getP0();
 			String out = p.indexOf(inst) + ": " + A_DIV + inst.getP0();
 			addRow(out);
 			fillTable("a", Integer.toString(a));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_DIVISION_BY_ZERO));
 	}
-	
+
 	/**
 	 * a <- a div mem
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void divAMem(Instruction inst) throws LogicalErrorException{
+	private void divAMem(Instruction inst) throws LogicalErrorException {
 		if (s[inst.getP0()] == 0)
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_DIVISION_BY_ZERO));
 		a = a / s[inst.getP0()];
-		String out = p.indexOf(inst) +": " + A_DIV + "s[" + inst.getP0() + "]";
+		String out = p.indexOf(inst) + ": " + A_DIV + "s[" + inst.getP0() + "]";
 		addRow(out);
 		fillTable("a", Integer.toString(a));
 	}
-	
+
 	/**
 	 * a <- a div mmem
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void divAMmem(Instruction inst) throws LogicalErrorException{
+	private void divAMmem(Instruction inst) throws LogicalErrorException {
 		if (s[inst.getP0()] == 0)
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			a = a / s[i[inst.getP0()]+inst.getP1()];
-			String out = p.indexOf(inst) +": " + A_DIV + "s[i" + inst.getP0() + "+" + inst.getP1() + "]"; 
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_DIVISION_BY_ZERO));
+		if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			a = a / s[i[inst.getP0()] + inst.getP1()];
+			String out = p.indexOf(inst) + ": " + A_DIV + "s[i" + inst.getP0()
+					+ "+" + inst.getP1() + "]";
 			addRow(out);
 			fillTable("a", Integer.toString(a));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
-	
+
 	/**
 	 * a <- a sub imm
+	 * 
 	 * @param inst
 	 * @return
 	 */
-	private void subAImm(Instruction inst){
+	private void subAImm(Instruction inst) {
 		a -= inst.getP0();
 		String out = p.indexOf(inst) + ": " + A_SUB + inst.getP0();
 		addRow(out);
 		fillTable("a", Integer.toString(a));
 	}
-	
+
 	/**
 	 * a <- a sub mem
+	 * 
 	 * @param inst
 	 * @return
 	 */
-	private void subAMem(Instruction inst){
+	private void subAMem(Instruction inst) {
 		a -= s[inst.getP0()];
-		String out = p.indexOf(inst) +": " + A_SUB + "s[" + inst.getP0() + "]";
+		String out = p.indexOf(inst) + ": " + A_SUB + "s[" + inst.getP0() + "]";
 		addRow(out);
 		fillTable("a", Integer.toString(a));
 	}
-	
+
 	/**
 	 * a <- a sub mmem
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void subAMmem(Instruction inst) throws LogicalErrorException{
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			a -= s[i[inst.getP0()]+inst.getP1()];
-			String out = p.indexOf(inst) +": " + A_SUB + "s[i" + inst.getP0() + "+" + inst.getP1() + "]"; 
+	private void subAMmem(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			a -= s[i[inst.getP0()] + inst.getP1()];
+			String out = p.indexOf(inst) + ": " + A_SUB + "s[i" + inst.getP0()
+					+ "+" + inst.getP1() + "]";
 			addRow(out);
 			fillTable("a", Integer.toString(a));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
-	
+
 	/**
 	 * a <- a mod imm
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void modAImm(Instruction inst) throws LogicalErrorException{
-		if (inst.getP0() != 0){
+	private void modAImm(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() != 0) {
 			a = a % inst.getP0();
 			String out = p.indexOf(inst) + ": " + A_MOD + inst.getP0();
 			addRow(out);
 			fillTable("a", Integer.toString(a));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_DIVISION_BY_ZERO));
 	}
-	
+
 	/**
 	 * a <- a mod mem
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void modAMem(Instruction inst) throws LogicalErrorException{
-		if (s[inst.getP0()] != 0){
+	private void modAMem(Instruction inst) throws LogicalErrorException {
+		if (s[inst.getP0()] != 0) {
 			a = a % s[inst.getP0()];
-			String out = p.indexOf(inst) +": " + A_MOD + "s[" + inst.getP0() + "]";
+			String out = p.indexOf(inst) + ": " + A_MOD + "s[" + inst.getP0()
+					+ "]";
 			addRow(out);
 			fillTable("a", Integer.toString(a));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_DIVISION_BY_ZERO));
 	}
-	
+
 	/**
 	 * a <- a mod mmem
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void modAMmem(Instruction inst) throws LogicalErrorException{
-		if(s[i[inst.getP0()]+inst.getP1()] == 0)
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_DIVISION_BY_ZERO));
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			a = a % s[i[inst.getP0()]+inst.getP1()];
-			String out = p.indexOf(inst) +": " + A_MOD + "s[i" + inst.getP0() + "+" + inst.getP1() + "]"; 
+	private void modAMmem(Instruction inst) throws LogicalErrorException {
+		if (s[i[inst.getP0()] + inst.getP1()] == 0)
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_DIVISION_BY_ZERO));
+		if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			a = a % s[i[inst.getP0()] + inst.getP1()];
+			String out = p.indexOf(inst) + ": " + A_MOD + "s[i" + inst.getP0()
+					+ "+" + inst.getP1() + "]";
 			addRow(out);
 			fillTable("a", Integer.toString(a));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
-	
+
 	/**
 	 * a <- a * imm
+	 * 
 	 * @param inst
 	 * @return
 	 */
-	private void mulAImm(Instruction inst){
+	private void mulAImm(Instruction inst) {
 		a = a * inst.getP0();
 		String out = p.indexOf(inst) + ": " + A_MUL + inst.getP0();
 		addRow(out);
 		fillTable("a", Integer.toString(a));
 	}
-	
+
 	/**
 	 * a <- a * mem
+	 * 
 	 * @param inst
 	 * @return
 	 */
-	private void mulAMem(Instruction inst){
+	private void mulAMem(Instruction inst) {
 		a = a * s[inst.getP0()];
-		String out = p.indexOf(inst) +": " + A_MUL + "s[" + inst.getP0() + "]";
+		String out = p.indexOf(inst) + ": " + A_MUL + "s[" + inst.getP0() + "]";
 		addRow(out);
 		fillTable("a", Integer.toString(a));
 	}
-	
+
 	/**
 	 * a <- a * mmem
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void mulAMmem(Instruction inst) throws LogicalErrorException{
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			a = a * s[i[inst.getP0()]+inst.getP1()];
-			String out = p.indexOf(inst) +": " + A_MUL + "s[i" + inst.getP0() + "+" + inst.getP1() + "]"; 
+	private void mulAMmem(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			a = a * s[i[inst.getP0()] + inst.getP1()];
+			String out = p.indexOf(inst) + ": " + A_MUL + "s[i" + inst.getP0()
+					+ "+" + inst.getP1() + "]";
 			addRow(out);
 			fillTable("a", Integer.toString(a));
-		}	
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
-	}
-	
-///////////////////////////////HALT INSTRUKTION////////////////////////////////
-	
-	/**
-	 * halt Instruktion
-	 * @param inst
-	 * @return
-	 */
-	private void halt(Instruction inst){
-		addRow(p.indexOf(inst)+": HALT");
-		for(int i = 0; i < output.length; i++){
-			fillTable("s["+output[i]+"]", Integer.toString(s[output[i]]));
-		}
-	}
-	
-////////////////////////////INDEX INSTRUKTIONEN////////////////////////////////
-	
-	/**
-	 * i <- i - 1
-	 * @param inst
-	 * @return
-	 * @throws LogicalErrorException 
-	 */
-	private void idxDec(Instruction inst) throws LogicalErrorException{
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			i[inst.getP0()]--;
-			String out = p.indexOf(inst) + ": i" + inst.getP0() + " <- i" + inst.getP0() + " - 1";
-			addRow(out);
-			fillTable("i"+inst.getP0(),Integer.toString(i[inst.getP0()]));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
-	}
-	
-	/**
-	 * i <- i + 1
-	 * @param inst
-	 * @return
-	 * @throws LogicalErrorException 
-	 */
-	private void idxInc(Instruction inst) throws LogicalErrorException{
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			i[inst.getP0()]++;
-			String out = p.indexOf(inst) + ": i" + inst.getP0() + " <- i" + inst.getP0() + " + 1";
-			addRow(out);
-			fillTable("i"+inst.getP0(),Integer.toString(i[inst.getP0()]));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 
-	
-//////////////////////////////LADE INSTRUKTIONEN///////////////////////////////
-	
+	// /////////////////////////////HALT
+	// INSTRUKTION////////////////////////////////
+
 	/**
-	 * reg <- imm
+	 * halt Instruktion
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
 	 */
-	private void ldRegImm(Instruction inst) throws LogicalErrorException{
-		if(inst.getP0() < -1 || inst.getP0() > i.length)
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
-		
+	private void halt(Instruction inst) {
+		addRow(p.indexOf(inst) + ": HALT");
+		for (int i = 0; i < output.length; i++) {
+			fillTable("s[" + output[i] + "]", Integer.toString(s[output[i]]));
+		}
+	}
+
+	// //////////////////////////INDEX
+	// INSTRUKTIONEN////////////////////////////////
+
+	/**
+	 * i <- i - 1
+	 * 
+	 * @param inst
+	 * @return
+	 * @throws LogicalErrorException
+	 */
+	private void idxDec(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() < 0 || inst.getP0() >= i.length)
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+		i[inst.getP0()]--;
+		String out = p.indexOf(inst) + ": i" + inst.getP0() + " <- i"
+				+ inst.getP0() + " - 1";
+		addRow(out);
+		fillTable("i" + inst.getP0(), Integer.toString(i[inst.getP0()]));
+	}
+
+	/**
+	 * i <- i + 1
+	 * 
+	 * @param inst
+	 * @return
+	 * @throws LogicalErrorException
+	 */
+	private void idxInc(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() < 0 || inst.getP0() >= i.length)
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+		i[inst.getP0()]++;
+		String out = p.indexOf(inst) + ": i" + inst.getP0() + " <- i"
+				+ inst.getP0() + " + 1";
+		addRow(out);
+		fillTable("i" + inst.getP0(), Integer.toString(i[inst.getP0()]));
+	}
+
+	// ////////////////////////////LADE
+	// INSTRUKTIONEN///////////////////////////////
+
+	/**
+	 * reg <- imm
+	 * 
+	 * @param inst
+	 * @return
+	 * @throws LogicalErrorException
+	 */
+	private void ldRegImm(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() < -1 || inst.getP0() > i.length)
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+
 		String out;
 		String reg = null;
 		String regValue = null;
 		String mem = "s[" + inst.getP1() + "]";
-		if (inst.getP0() == -1){
+		if (inst.getP0() == -1) {
 			a = inst.getP1();
 			reg = "a";
 			regValue = Integer.toString(a);
-		}	
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			i[inst.getP0()] = inst.getP1();	
+		}
+		if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			i[inst.getP0()] = inst.getP1();
 			reg = "i" + inst.getP0();
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		out = p.indexOf(inst) + ": " + reg + " <- " + mem;
 		addRow(out);
-		fillTable(reg,regValue);
+		fillTable(reg, regValue);
 	}
-	
+
 	/**
 	 * reg <- mem
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void ldRegMem(Instruction inst) throws LogicalErrorException{
-		if(inst.getP0() < -1 || inst.getP0() > i.length)
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
-		
+	private void ldRegMem(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() < -1 || inst.getP0() > i.length)
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+
 		String out;
 		String reg = null;
 		String regValue = null;
 		String mem = "s[" + inst.getP1() + "]";
-		if (inst.getP0() == -1){
+		if (inst.getP0() == -1) {
 			a = s[inst.getP1()];
 			reg = "a";
 			regValue = Integer.toString(a);
-		}	
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
+		}
+		if (inst.getP0() >= 0 && inst.getP0() < i.length) {
 			i[inst.getP0()] = s[inst.getP1()];
 			reg = "i" + inst.getP0();
 			regValue = Integer.toString(i[inst.getP0()]);
 		}
 		out = p.indexOf(inst) + ": " + reg + " <- " + mem;
 		addRow(out);
-		fillTable(reg,regValue);
+		fillTable(reg, regValue);
 	}
-	
+
 	/**
 	 * a <- mmem
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void ldAMmem(Instruction inst) throws LogicalErrorException{
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			a = s[i[inst.getP0()]+inst.getP1()];
-			String out = p.indexOf(inst) + ": a <- s[i" + inst.getP0() + "+" + inst.getP1() + "]";
-			addRow(out);
-			fillTable("a", Integer.toString(a));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+	private void ldAMmem(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() < 0 || inst.getP0() >= i.length)
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+
+		a = s[i[inst.getP0()] + inst.getP1()];
+		String out = p.indexOf(inst) + ": a <- s[i" + inst.getP0() + "+"
+				+ inst.getP1() + "]";
+		addRow(out);
+		fillTable("a", Integer.toString(a));
+
 	}
-	
+
 	/**
 	 * mem <- reg
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void ldMemReg(Instruction inst) throws LogicalErrorException{
-		if(inst.getP0() < -1 || inst.getP0() > i.length)
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
-		
+	private void ldMemReg(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() < -1 || inst.getP0() > i.length)
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+
 		String out;
 		String reg = null;
-		String regValue = null;
 		String mem = "s[" + inst.getP0() + "]";
-		if (inst.getP1() == -1){
+		if (inst.getP1() == -1) {
 			s[inst.getP0()] = a;
 			out = p.indexOf(inst) + ": s[" + inst.getP0() + "] <- a";
 			reg = "a";
-			regValue = Integer.toString(a);
 		}
-		if (inst.getP1() >= 0 && inst.getP1() < i.length){
+		if (inst.getP1() >= 0 && inst.getP1() < i.length) {
 			s[inst.getP0()] = i[inst.getP1()];
 			reg = "i" + inst.getP1();
-			regValue = Integer.toString(i[inst.getP1()]);
 		}
 		out = p.indexOf(inst) + ": " + mem + " <- " + reg;
 		addRow(out);
-		fillTable(mem,Integer.toString(s[inst.getP0()]));
+		fillTable(mem, Integer.toString(s[inst.getP0()]));
 	}
-	
+
 	/**
 	 * mmem <- a
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void ldMmemA(Instruction inst) throws LogicalErrorException{
-		if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			s[i[inst.getP0()]+inst.getP1()] = a;
-			String out = p.indexOf(inst) + ": s[i" + inst.getP0() + "+" + inst.getP1() + "] <- a";
+	private void ldMmemA(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			s[i[inst.getP0()] + inst.getP1()] = a;
+			String out = p.indexOf(inst) + ": s[i" + inst.getP0() + "+"
+					+ inst.getP1() + "] <- a";
 			addRow(out);
-			fillTable("s[i" + inst.getP0() + "+" + inst.getP1() + "]", Integer.toString(s[i[inst.getP0()]+inst.getP1()]));
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+			fillTable("s[i" + inst.getP0() + "+" + inst.getP1() + "]",
+					Integer.toString(s[i[inst.getP0()] + inst.getP1()]));
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
-	
-///////////////////////////////JUMP INSTRUKTIONEN//////////////////////////////
-	
+
+	// /////////////////////////////JUMP
+	// INSTRUKTIONEN//////////////////////////////
+
 	/**
 	 * jump x
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void jump(Instruction inst) throws LogicalErrorException{
-		if (inst.getP0() >= 0 && inst.getP0() < p.size()){
+	private void jump(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() >= 0 && inst.getP0() < p.size()) {
 			iP = inst.getP0();
 			addRow(p.indexOf(inst) + ": jump " + inst.getP0());
-		}	
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_JUMP_INVALID));
 	}
-	
+
 	/**
 	 * if reg = 0 then jump x
+	 * 
 	 * @param inst
 	 * @return
-	 * @throws LogicalErrorException 
+	 * @throws LogicalErrorException
 	 */
-	private void jumpEq(Instruction inst) throws LogicalErrorException{
+	private void jumpEq(Instruction inst) throws LogicalErrorException {
 		String out;
 		String reg = null;
 		String regValue = null;
-		if (inst.getP0() == -1){
-			if (a == 0){
+		if (inst.getP0() == -1) {
+			if (a == 0) {
 				iP = inst.getP1();
 			}
 			reg = "a";
 			regValue = Integer.toString(a);
-		}		
-		else if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			if (i[inst.getP0()] == 0){
+		} else if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			if (i[inst.getP0()] == 0) {
 				iP = inst.getP1();
 			}
 			reg = "i" + inst.getP0();
 			regValue = Integer.toString(i[inst.getP0()]);
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
-		
-		out = p.indexOf(inst) + ": if " + reg + " = 0 then jump " + inst.getP1();
-		addRow(out);
-		fillTable(reg, regValue);
-	}
-	
-	/**
-	 * if reg >= 0 then jump x
-	 * @param inst
-	 * @return
-	 * @throws LogicalErrorException 
-	 */
-	private void jumpGe(Instruction inst) throws LogicalErrorException{
-		String out;
-		String reg = null;
-		String regValue = null;
-		if (inst.getP0() == -1){
-			if (a >= 0){
-				iP = inst.getP1();
-			}
-			reg = "a";
-			regValue = Integer.toString(a);
-		}		
-		else if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			if (inst.getP0() >= 0){
-				iP = inst.getP1();
-			}
-			reg = "i" + inst.getP0();
-			regValue = Integer.toString(i[inst.getP0()]);
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
-		
-		out = p.indexOf(inst) + ": if " + reg + " >= 0 then jump " + inst.getP1();
-		addRow(out);
-		fillTable(reg, regValue);
-	}
-	
-	/**
-	 * if reg > 0 then jump x
-	 * @param inst
-	 * @return
-	 * @throws LogicalErrorException 
-	 */
-	private void jumpGt(Instruction inst) throws LogicalErrorException{
-		String out;
-		String reg = null;
-		String regValue = null;
-		if (inst.getP0() == -1){
-			if (a > 0){
-				iP = inst.getP1();
-			}
-			reg = "a";
-			regValue = Integer.toString(a);
-		}		
-		else if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			if (inst.getP0() > 0){
-				iP = inst.getP1();
-			}
-			reg = "i" + inst.getP0();
-			regValue = Integer.toString(i[inst.getP0()]);
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
-		
-		out = p.indexOf(inst) + ": if " + reg + " > 0 then jump " + inst.getP1();
-		addRow(out);
-		fillTable(reg, regValue);
-	}
-	
-	/**
-	 * if reg <= 0 then jump x
-	 * @param inst
-	 * @return
-	 * @throws LogicalErrorException 
-	 */
-	private void jumpLe(Instruction inst) throws LogicalErrorException{
-		String out;
-		String reg = null;
-		String regValue = null;
-		if (inst.getP0() == -1){
-			if (a <= 0){
-				iP = inst.getP1();
-			}
-			reg = "a";
-			regValue = Integer.toString(a);
-		}		
-		else if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			if (inst.getP0() <= 0){
-				iP = inst.getP1();
-			}
-			reg = "i" + inst.getP0();
-			regValue = Integer.toString(i[inst.getP0()]);
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
-		
-		out = p.indexOf(inst) + ": if " + reg + " <= 0 then jump " + inst.getP1();
-		addRow(out);
-		fillTable(reg, regValue);
-	}
-	
-	/**
-	 * if reg < 0 then jump x
-	 * @param inst
-	 * @return
-	 * @throws LogicalErrorException 
-	 */
-	private void jumpLt(Instruction inst) throws LogicalErrorException{
-		String out;
-		String reg = null;
-		String regValue = null;
-		if (inst.getP0() == -1){
-			if (a < 0){
-				iP = inst.getP1();	
-			}
-			reg = "a";
-			regValue = Integer.toString(a);
-		}		
-		else if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			if (inst.getP0() < 0){
-				iP = inst.getP1();
-			}
-			reg = "i" + inst.getP0();
-			regValue = Integer.toString(i[inst.getP0()]);
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
-		
-		out = p.indexOf(inst) + ": if " + reg + " < 0 then jump " + inst.getP1();
-		addRow(out);
-		fillTable(reg, regValue);
-	}
-	
-	/**
-	 * if reg != 0 then jump x
-	 * @param inst
-	 * @return
-	 * @throws LogicalErrorException 
-	 */
-	private void jumpNe(Instruction inst) throws LogicalErrorException{
-		String out;
-		String reg = null;
-		String regValue = null;
-		if (inst.getP0() == -1){
-			if (a != 0){
-				iP = inst.getP1();		
-			}
-			reg = "a";
-			regValue = Integer.toString(a);
-		}		
-		else if (inst.getP0() >= 0 && inst.getP0() < i.length){
-			if (inst.getP0() != 0){
-				iP = inst.getP1();
-			}
-			reg = "i" + inst.getP0();
-			regValue = Integer.toString(i[inst.getP0()]);
-		}
-		else
-			throw new LogicalErrorException(p.indexOf(inst),messages.getString(ERROR_JUMP_INVALID));
-		
-		out = p.indexOf(inst) + ": if " + reg + " != 0 then jump " + inst.getP1();
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_JUMP_INVALID));
+
+		out = p.indexOf(inst) + ": if " + reg + " = 0 then jump "
+				+ inst.getP1();
 		addRow(out);
 		fillTable(reg, regValue);
 	}
 
-////////////////////TABELLEN FUNKTIONEN////////////////////////////////////////
-	
+	/**
+	 * if reg >= 0 then jump x
+	 * 
+	 * @param inst
+	 * @return
+	 * @throws LogicalErrorException
+	 */
+	private void jumpGe(Instruction inst) throws LogicalErrorException {
+		String out;
+		String reg = null;
+		String regValue = null;
+		if (inst.getP0() == -1) {
+			if (a >= 0) {
+				iP = inst.getP1();
+			}
+			reg = "a";
+			regValue = Integer.toString(a);
+		} else if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			if (inst.getP0() >= 0) {
+				iP = inst.getP1();
+			}
+			reg = "i" + inst.getP0();
+			regValue = Integer.toString(i[inst.getP0()]);
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_JUMP_INVALID));
+
+		out = p.indexOf(inst) + ": if " + reg + " >= 0 then jump "
+				+ inst.getP1();
+		addRow(out);
+		fillTable(reg, regValue);
+	}
+
+	/**
+	 * if reg > 0 then jump x
+	 * 
+	 * @param inst
+	 * @return
+	 * @throws LogicalErrorException
+	 */
+	private void jumpGt(Instruction inst) throws LogicalErrorException {
+		String out;
+		String reg = null;
+		String regValue = null;
+		if (inst.getP0() == -1) {
+			if (a > 0) {
+				iP = inst.getP1();
+			}
+			reg = "a";
+			regValue = Integer.toString(a);
+		} else if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			if (inst.getP0() > 0) {
+				iP = inst.getP1();
+			}
+			reg = "i" + inst.getP0();
+			regValue = Integer.toString(i[inst.getP0()]);
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_JUMP_INVALID));
+
+		out = p.indexOf(inst) + ": if " + reg + " > 0 then jump "
+				+ inst.getP1();
+		addRow(out);
+		fillTable(reg, regValue);
+	}
+
+	/**
+	 * if reg <= 0 then jump x
+	 * 
+	 * @param inst
+	 * @return
+	 * @throws LogicalErrorException
+	 */
+	private void jumpLe(Instruction inst) throws LogicalErrorException {
+		String out;
+		String reg = null;
+		String regValue = null;
+		if (inst.getP0() == -1) {
+			if (a <= 0) {
+				iP = inst.getP1();
+			}
+			reg = "a";
+			regValue = Integer.toString(a);
+		} else if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			if (inst.getP0() <= 0) {
+				iP = inst.getP1();
+			}
+			reg = "i" + inst.getP0();
+			regValue = Integer.toString(i[inst.getP0()]);
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_JUMP_INVALID));
+
+		out = p.indexOf(inst) + ": if " + reg + " <= 0 then jump "
+				+ inst.getP1();
+		addRow(out);
+		fillTable(reg, regValue);
+	}
+
+	/**
+	 * if reg < 0 then jump x
+	 * 
+	 * @param inst
+	 * @return
+	 * @throws LogicalErrorException
+	 */
+	private void jumpLt(Instruction inst) throws LogicalErrorException {
+		String out;
+		String reg = null;
+		String regValue = null;
+		if (inst.getP0() == -1) {
+			if (a < 0) {
+				iP = inst.getP1();
+			}
+			reg = "a";
+			regValue = Integer.toString(a);
+		} else if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			if (inst.getP0() < 0) {
+				iP = inst.getP1();
+			}
+			reg = "i" + inst.getP0();
+			regValue = Integer.toString(i[inst.getP0()]);
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_JUMP_INVALID));
+
+		out = p.indexOf(inst) + ": if " + reg + " < 0 then jump "
+				+ inst.getP1();
+		addRow(out);
+		fillTable(reg, regValue);
+	}
+
+	/**
+	 * if reg != 0 then jump x
+	 * 
+	 * @param inst
+	 * @return
+	 * @throws LogicalErrorException
+	 */
+	private void jumpNe(Instruction inst) throws LogicalErrorException {
+		String out;
+		String reg = null;
+		String regValue = null;
+		if (inst.getP0() == -1) {
+			if (a != 0) {
+				iP = inst.getP1();
+			}
+			reg = "a";
+			regValue = Integer.toString(a);
+		} else if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			if (inst.getP0() != 0) {
+				iP = inst.getP1();
+			}
+			reg = "i" + inst.getP0();
+			regValue = Integer.toString(i[inst.getP0()]);
+		} else
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_JUMP_INVALID));
+
+		out = p.indexOf(inst) + ": if " + reg + " != 0 then jump "
+				+ inst.getP1();
+		addRow(out);
+		fillTable(reg, regValue);
+	}
+
+	// //////////////////TABELLEN
+	// FUNKTIONEN////////////////////////////////////////
+
 	/**
 	 * Fügt der Programmtabelle eine neue Reihe zu
-	 * @param instruction Instruktion der Reihe
+	 * 
+	 * @param instruction
+	 *            Instruktion der Reihe
 	 */
-	private void addRow(String instruction){
+	private void addRow(String instruction) {
 		ArrayList<String> newLine = new ArrayList<>(table.get(0).size());
-		for(int i = 0; i < table.get(0).size(); i++)
+		for (int i = 0; i < table.get(0).size(); i++)
 			newLine.add("");
 		newLine.set(0, instruction);
 		table.add(newLine);
 	}
-	
+
 	/**
-	 * Fügt in der letzten Tabellenreihe den Wert "value" in der Spalte "id" hinzu
+	 * Fügt in der letzten Tabellenreihe den Wert "value" in der Spalte "id"
+	 * hinzu
+	 * 
 	 * @param id
 	 * @param value
 	 */
-	private void fillTable(String id, String value){
-		 int index;
-		 String cmpString;
-		 ArrayList<String> line = table.get(table.size()-1);
-		 
-		 index = table.get(0).indexOf(id);	//finde die Listenstelle für den Wert
-		 if(index < 0){						//Wenn Listenstelle noch nicht vorhanden, eine erzeugen
-			 index = 1;
-			 cmpString = table.get(0).get(index);
-			 for(;index < table.get(0).size(); index++){	//richtige spaltenlücke finden
-				 if(id.compareTo(table.get(0).get(index)) < 0)
-					 break;
-			 }
-			 table.get(0).add(index,id);				//header einfügen
-			 for(int i = 1; i < table.size(); i++)		//Leerstrings für die anderen Tabellenzeilen einfügen
-				 table.get(i).add(index, "");
-		 }
-		 
-	
-		 for(String string : line){
-			 if(string == null)
-				 string = "";
-		 }
-		 line.set(index, value);
+	private void fillTable(String id, String value) {
+		int index;
+		ArrayList<String> line = table.get(table.size() - 1);
+
+		// finde die Listenstelle für den Wert
+		index = table.get(0).indexOf(id);
+		// Wenn Listenstelle noch nicht vorhanden, eine erzeugen
+		if (index < 0) {
+			index = 1;
+			// richtige spaltenlücke finden
+			for (; index < table.get(0).size(); index++) {
+				if (id.compareTo(table.get(0).get(index)) < 0)
+					break;
+			}
+			// header einfügen
+			table.get(0).add(index, id);
+			// Leerstrings für die anderen Tabellenzeilen einfügen
+			for (int i = 1; i < table.size(); i++)
+				table.get(i).add(index, "");
+		}
+		for (String string : line) {
+			if (string == null)
+				string = "";
+		}
+		line.set(index, value);
 	}
-	
+
 	/**
 	 * Gibt die Programmtabelle zurück
+	 * 
 	 * @return Programmtabelle
 	 */
-	public ArrayList<ArrayList<String>> getTable(){
+	public ArrayList<ArrayList<String>> getTable() {
 		return table;
 	}
-	
+
 	public boolean isDebug() {
 		return debug;
 	}

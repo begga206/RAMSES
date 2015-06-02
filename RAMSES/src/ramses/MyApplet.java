@@ -148,18 +148,16 @@ public class MyApplet extends JApplet {
 					}
 					ramses = new Ramses(input, output, inst);
 					fillInputLabels();
-					centerPanel.revalidate();
 					start.setEnabled(true);
 					debug.setEnabled(true);
 					console.setText(messages.getString(COMPILING_SUCCESSFUL));
-				} catch (SyntaxErrorException e) {
+				} catch (SyntaxErrorException | LogicalErrorException e) {
+					centerPanel.removeAll();
 					debug.setEnabled(false);
 					start.setEnabled(false);
-					System.out.println(e);
-				} catch (LogicalErrorException e) {
-					start.setEnabled(false);
-					debug.setEnabled(false);
-					System.out.println(e);
+					console.setText(e.toString());
+				} finally {
+					centerPanel.revalidate();
 				}
 			}
 		});
