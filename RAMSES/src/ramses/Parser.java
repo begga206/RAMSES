@@ -178,8 +178,8 @@ public class Parser {
 				input.add(new Input(Integer.parseInt(index), Integer
 						.parseInt(value)));
 			} else
-				throw new SyntaxErrorException(-2, messages.getString(messages
-						.getString(ERROR_INPUT_FORMAT)) + token);
+				throw new SyntaxErrorException(-2, messages
+						.getString(ERROR_INPUT_FORMAT) + token);
 		}
 		Input[] n = new Input[input.size()];
 		for (int i = 0; i < n.length; i++) {
@@ -203,8 +203,8 @@ public class Parser {
 		Scanner sc = new Scanner(outputLine);
 		if (!sc.next().matches(PATTERN_OUTPUT_KEYWORD)) {
 			sc.close();
-			throw new SyntaxErrorException(-1, messages.getString(messages
-					.getString(ERROR_OUTPUT_KEYWORD)));
+			throw new SyntaxErrorException(-1, messages
+					.getString(ERROR_OUTPUT_KEYWORD));
 		}
 		sc.useDelimiter(COMMA);
 		while (sc.hasNext())
