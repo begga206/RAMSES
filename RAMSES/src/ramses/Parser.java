@@ -29,6 +29,7 @@ public class Parser {
 	public static final String ERROR_OUTPUT_KEYWORD = "ERROR_OUTPUT_KEYWORD";
 	public static final String ERROR_OUTPUT_FORMAT = "ERROR_OUTPUT_FORMAT";
 	public static final String ERROR_INDEX_DEST_NE_OP1 = "ERROR_INDEX_DEST_NE_OP1";
+	public static final String ERROR_WRONG_IP = "ERROR_WRONG_IP";
 
 	// CASES//
 	public static final String CASE_HALT = "HALT";
@@ -64,35 +65,44 @@ public class Parser {
 	public static final int INDEX_COND_JUMP_DEST = 7;
 
 	// PATTERN//
-	public static final String PATTERN_LOAD_INST = "\\d+: (a|i\\d*|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]) "
+	public static final String PATTERN_LOAD_INST = 
+			"\\d+: (a|i\\d*|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]) "
 			+ "<- (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]|a|i\\d*)";
 	public static final String PATTERN_JUMP_INST = "\\d+: jump \\d+";
-	public static final String PATTERN_COND_JUMP_INST = "\\d+: if (a|i\\d*) (=|!=|<=|>=|<|>) 0 then jump \\d+";
-	public static final String PATTERN_ARITH_INST = "\\d+: a <- a (\\+|\\-|\\*|div|mod) "
+	public static final String PATTERN_COND_JUMP_INST = 
+			"\\d+: if (a|i\\d*) (=|!=|<=|>=|<|>) 0 then jump \\d+";
+	public static final String PATTERN_ARITH_INST = 
+			"\\d+: a <- a (\\+|\\-|\\*|div|mod) "
 			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])";
 	public static final String PATTERN_HALT_INST = "\\d+: HALT";
-	public static final String PATTERN_INDEX_INST = "\\d+: i\\d* <- i\\d* (\\+|\\-) 1";
+	public static final String PATTERN_INDEX_INST = 
+			"\\d+: i\\d* <- i\\d* (\\+|\\-) 1";
 	public static final String PATTERN_AKKU = "a";
 	public static final String PATTERN_IMM = "\\d+";
 	public static final String PATTERN_INDEX = "i\\d*";
 	public static final String PATTERN_MEM = "s\\[\\d+\\]";
-	public static final String PATTERN_MMEM = "s\\[i\\d*\\+*\\d*\\]";
+	public static final String PATTERN_MMEM = "s\\[i\\d*(\\+\\d+)*\\]";
 	public static final String PATTERN_REG = "(a|i\\d*)";
 	public static final String PATTERN_MEMS = "s\\[\\d+\\]...s\\[\\d+\\]";
-	public static final String PATTERN_INPUT_MEM_VALUE = "s\\[\\d+\\]\\s?=\\s?-?\\d+";
+	public static final String PATTERN_INPUT_MEM_VALUE = 
+			"s\\[\\d+\\]\\s?=\\s?-?\\d+";
 	public static final String PATTERN_INPUT_KEYWORD = "INPUT";
 	public static final String PATTERN_OUTPUT_KEYWORD = "OUTPUT";
 
 	// SYNTAX ERROR PATTERN//
-	public static final String PATTERN_NO_DEST_REG = "\\d+: <- (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]|a|i\\d*)";
+	public static final String PATTERN_NO_DEST_REG = 
+			"\\d+: <- (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]|a|i\\d*)";
+	public static final String PATTERN_IMM_DEST_REG = "\\d+: \\d+ <- (.)*";
 	public static final String PATTERN_UNKNOWN_OPERATOR = "\\d+: a <- a (.)* "
 			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])";
-	public static final String PATTERN_NO_FIRST_OPERAND = "\\d+: a <- (\\+|\\-|\\*|div|mod) "
+	public static final String PATTERN_NO_FIRST_OPERAND = 
+			"\\d+: a <- (\\+|\\-|\\*|div|mod) "
 			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])";
-	public static final String PATTERN_NO_SECOND_OPERAND = "\\d+: a <- a (\\+|\\-|\\*|div|mod) ";
+	public static final String PATTERN_NO_SECOND_OPERAND = 
+			"\\d+: a <- a (\\+|\\-|\\*|div|mod)\\s*";
 	public static final String PATTERN_NO_IP = "\\D(.)*";
-	public static final String PATTERN_LD_MEM_IMM = "\\d+: (" + PATTERN_MEM
-			+ "|" + PATTERN_MMEM + " <- " + PATTERN_IMM + ")";
+	public static final String PATTERN_LD_MEM_IMM = 
+			"\\d+: s\\[(\\d+|i\\d*(\\+\\d+)*)\\] <- \\d+";
 	public static final String PATTERN_LD_MEM_MEM = "\\d+: (" + PATTERN_MEM
 			+ "|" + PATTERN_MMEM + ") <- (" + PATTERN_MEM + "|" + PATTERN_MMEM
 			+ ")";
@@ -104,35 +114,51 @@ public class Parser {
 	public static final String PATTERN_NO_THEN = "\\d+: if (a|i\\d*) "
 			+ "(=|!=|<=|>=|<|>) 0 jump \\d+";
 	public static final String PATTERN_IF_NOT_NULL = "\\d+: if (a|i\\d*) "
-			+ "(=|!=|<=|>=|<|>) 0 then jump \\d+";
+			+ "(=|!=|<=|>=|<|>) [^0] then jump \\d+";
 	public static final String PATTERN_IF_UNKNWN_OP = "\\d+: if (a|i\\d*) "
 			+ ".* 0 then jump \\d+";
 	public static final String PATTERN_INDEX_UNKWN_OP = 
-			"\\d+: i\\d* <- i\\d* (.)* \\d+";
+			"\\d+: i\\d* <- i\\d* [^(\\+|\\-)] \\d+";
 	public static final String PATTERN_INDEX_OP2_NOT_ONE = 
 			"\\d+: i\\d* <- i\\d* (\\+|\\-) \\d+";
 
 	// SYNTAX ERROR MELDUNGEN ZU OBEN STEHENDEN PATTERN//
-	public static final String ERROR_PATTERN_NO_DEST_REG = "ERROR_PATTERN_NO_DEST_REG";
-	public static final String ERROR_PATTERN_UNKNOWN_OPERATOR = "ERROR_PATTERN_UNKNOWN_OPERATOR";
-	public static final String ERROR_PATTERN_NO_FIRST_OPERAND = "ERROR_PATTERN_NO_FIRST_OPERAND";
-	public static final String ERROR_PATTERN_NO_SECOND_OPERAND = "ERROR_PATTERN_NO_SECOND_OPERAND";
+	public static final String ERROR_PATTERN_NO_DEST_REG = 
+			"ERROR_PATTERN_NO_DEST_REG";
+	public static final String ERROR_PATTERN_IMM_DEST_REG = 
+			"ERROR_PATTERN_IMM_DEST_REG";
+	public static final String ERROR_PATTERN_UNKNOWN_OPERATOR = 
+			"ERROR_PATTERN_UNKNOWN_OPERATOR";
+	public static final String ERROR_PATTERN_NO_FIRST_OPERAND = 
+			"ERROR_PATTERN_NO_FIRST_OPERAND";
+	public static final String ERROR_PATTERN_NO_SECOND_OPERAND = 
+			"ERROR_PATTERN_NO_SECOND_OPERAND";
 	public static final String ERROR_PATTERN_NO_IP = "ERROR_PATTERN_NO_IP";
-	public static final String ERROR_PATTERN_LD_MEM_IMM = "ERROR_PATTERN_LD_MEM_IMM";
-	public static final String ERROR_PATTERN_LD_MEM_MEM = "ERROR_PATTERN_LD_MEM_MEM";
-	public static final String ERROR_PATTERN_LD_I_MMEM = "ERROR_PATTERN_LD_I_MMEM";
-	public static final String ERROR_PATTEN_LD_REG_REG = "ERROR_PATTEN_LD_REG_REG";
-	public static final String ERROR_PATTERN_FORGOT_COLON = "ERROR_PATTERN_FORGOT_COLON";
+	public static final String ERROR_PATTERN_LD_MEM_IMM = 
+			"ERROR_PATTERN_LD_MEM_IMM";
+	public static final String ERROR_PATTERN_LD_MEM_MEM = 
+			"ERROR_PATTERN_LD_MEM_MEM";
+	public static final String ERROR_PATTERN_LD_I_MMEM = 
+			"ERROR_PATTERN_LD_I_MMEM";
+	public static final String ERROR_PATTEN_LD_REG_REG = 
+			"ERROR_PATTEN_LD_REG_REG";
+	public static final String ERROR_PATTERN_FORGOT_COLON = 
+			"ERROR_PATTERN_FORGOT_COLON";
 	public static final String ERROR_PATTERN_NO_THEN = "ERROR_PATTERN_NO_THEN";
-	public static final String ERROR_PATTERN_IF_NOT_NULL = "ERROR_PATTERN_IF_NOT_NULL";
-	public static final String ERROR_PATTERN_IF_UNKNWN_OP = "ERROR_PATTERN_IF_UNKNWN_OP";
-	public static final String ERROR_PATTERN_INDEX_UNKWN_OP = "ERROR_PATTERN_INDEX_UNKWN_OP";
-	public static final String ERROR_PATTERN_INDEX_OP2_NOT_ONE = "ERROR_PATTERN_INDEX_OP2_NOT_ONE";
+	public static final String ERROR_PATTERN_IF_NOT_NULL = 
+			"ERROR_PATTERN_IF_NOT_NULL";
+	public static final String ERROR_PATTERN_IF_UNKNWN_OP = 
+			"ERROR_PATTERN_IF_UNKNWN_OP";
+	public static final String ERROR_PATTERN_INDEX_UNKWN_OP = 
+			"ERROR_PATTERN_INDEX_UNKWN_OP";
+	public static final String ERROR_PATTERN_INDEX_OP2_NOT_ONE = 
+			"ERROR_PATTERN_INDEX_OP2_NOT_ONE";
 	
 
 	private static int instPtr;
 
-	static ResourceBundle messages;
+	static ResourceBundle messages = ResourceBundle.getBundle(
+			"ramses.MessagesBundle", Locale.getDefault());
 
 	/**
 	 * Methode liest aus der Inputzeile eines RAM Programms die Inputregister
@@ -144,25 +170,27 @@ public class Parser {
 	 */
 	public static Input[] parseInput(String inputLine)
 			throws SyntaxErrorException {
-		messages = ResourceBundle.getBundle("ramses.MessagesBundle",
-				Locale.getDefault());
 		ArrayList<Input> input = new ArrayList<>();
 		ArrayList<String> tokens = new ArrayList<>();
+		
 		Scanner sc = new Scanner(inputLine);
+		//Überprüfen, ob String zu dem INPUT Muster passt
 		if (!sc.next().matches(PATTERN_INPUT_KEYWORD)) {
 			sc.close();
 			throw new SyntaxErrorException(-2,
 					messages.getString(ERROR_INPUT_KEYWORD));
 		}
+		//String tokenisieren
 		sc.useDelimiter(COMMA);
 		while (sc.hasNext())
 			tokens.add(sc.next().trim());
 		sc.close();
 
+		//für jeden Token prüfen, zu welchem Format er gehört
 		for (String token : tokens) {
-			if (token.matches(PATTERN_MEM)) {
+			if (token.matches(PATTERN_MEM)) { //s[0]
 				input.add(new Input(parseOperand(token)));
-			} else if (token.matches(PATTERN_MEMS)) {
+			} else if (token.matches(PATTERN_MEMS)) { //s[0]...s[4]
 				String[] s = token.split("\\.\\.\\.");
 				int from = parseOperand(s[0]);
 				int till = parseOperand(s[1]);
@@ -170,7 +198,7 @@ public class Parser {
 				for (int i = from; i <= till; i++) {
 					input.add(new Input(i));
 				}
-			} else if (token.matches(PATTERN_INPUT_MEM_VALUE)) {
+			} else if (token.matches(PATTERN_INPUT_MEM_VALUE)) { //s[0]=1
 				String index = token.replaceAll("s\\[(\\d+)\\]\\s?=\\s?-?\\d+",
 						"$1");
 				String value = token.replaceAll("s\\[\\d+\\]\\s?=\\s?-?(\\d+)",
@@ -181,6 +209,7 @@ public class Parser {
 				throw new SyntaxErrorException(-2, messages
 						.getString(ERROR_INPUT_FORMAT) + token);
 		}
+		//Inputs in Array schreiben und zurück geben
 		Input[] n = new Input[input.size()];
 		for (int i = 0; i < n.length; i++) {
 			n[i] = input.get(i);
@@ -200,21 +229,25 @@ public class Parser {
 			throws SyntaxErrorException {
 		ArrayList<Integer> output = new ArrayList<>();
 		ArrayList<String> tokens = new ArrayList<>();
+		
 		Scanner sc = new Scanner(outputLine);
+		//Überprüfen, ob String zum OUTPUT Muster passt
 		if (!sc.next().matches(PATTERN_OUTPUT_KEYWORD)) {
 			sc.close();
 			throw new SyntaxErrorException(-1, messages
 					.getString(ERROR_OUTPUT_KEYWORD));
 		}
+		//String tokenisieren
 		sc.useDelimiter(COMMA);
 		while (sc.hasNext())
 			tokens.add(sc.next().trim());
 		sc.close();
 
+		//Für jeden Token prüfen, zu welchem Muster er gehört
 		for (String token : tokens) {
-			if (token.matches(PATTERN_MEM)) {
+			if (token.matches(PATTERN_MEM)) {//s[0]
 				output.add(parseOperand(token));
-			} else if (token.matches(PATTERN_MEMS)) {
+			} else if (token.matches(PATTERN_MEMS)) {//s[0]...s[4]
 				String[] s = token.split("\\.\\.\\.");
 				int from = parseOperand(s[0]);
 				int till = parseOperand(s[1]);
@@ -226,6 +259,7 @@ public class Parser {
 				throw new SyntaxErrorException(-1,
 						messages.getString(ERROR_INPUT_FORMAT) + token);
 		}
+		//In Array schreiben und zurück geben
 		int[] n = new int[output.size()];
 		for (int i = 0; i < n.length; i++) {
 			n[i] = output.get(i);
@@ -242,16 +276,18 @@ public class Parser {
 	 * @return Instruktionsobjekt, was der Befehlszeile entspricht
 	 * @throws SyntaxErrorException
 	 */
-	public static Instruction parseInst(int instPtr, String instLine)
+	public static Instruction parseInstruction(int instPtr, String instLine)
 			throws SyntaxErrorException {
 		Parser.instPtr = instPtr;
 		ArrayList<String> tokens = new ArrayList<>();
+		
+		//instLine tokenisieren
 		Scanner scanner = new Scanner(instLine);
 		while (scanner.hasNext()) {
 			tokens.add(scanner.next());
 		}
 		scanner.close();
-
+		//Prüfen zu welcher Instruktionskategorie instLine gehört
 		if (instLine.matches(PATTERN_LOAD_INST))
 			return parseLoadInst(instLine, tokens);
 		if (instLine.matches(PATTERN_JUMP_INST))
@@ -265,16 +301,38 @@ public class Parser {
 			return new Instruction(InstructionTag.HALT);
 		if (instLine.matches(PATTERN_INDEX_INST))
 			return parseIndexInst(instLine, tokens);
+		//Wenn instLine nicht kategorisierbar, möglichen Fehler suchen
 		checkForSyntaxErrors(instLine);
 		throw new SyntaxErrorException(instPtr,
 				messages.getString(ERROR_WRONG_FORMAT));
 	}
+	
+	public static ArrayList<Instruction> parseInstructions(ArrayList<String> instLines) throws SyntaxErrorException, LogicalErrorException{
+		ArrayList<Instruction> instructions = new ArrayList<>();
+		for(int i = 0; i < instLines.size(); i++){
+			parseInstruction(i ,instLines.get(i));
+			String iP = instLines.get(i).substring(0, instLines.get(i).indexOf(":"));
+			if(Integer.parseInt(iP) != i)
+				throw new LogicalErrorException(i, messages.getString(ERROR_WRONG_IP) + iP);
+		}
+		return instructions;
+	}
 
+	/**
+	 * Vergleicht String mit verschiedenen Mustern, die einen Syntaxfehler
+	 * beschreiben. Wenn ein Muster passend ist, wird die entsprechende
+	 * Fehlermeldung geworfen.
+	 * @param instLine
+	 * @throws SyntaxErrorException
+	 */
 	private static void checkForSyntaxErrors(String instLine)
 			throws SyntaxErrorException {
 		if (instLine.matches(PATTERN_NO_DEST_REG))
 			throw new SyntaxErrorException(instPtr,
 					messages.getString(ERROR_PATTERN_NO_DEST_REG));
+		if (instLine.matches(PATTERN_IMM_DEST_REG))
+			throw new SyntaxErrorException(instPtr,
+					messages.getString(ERROR_PATTERN_IMM_DEST_REG));
 		if (instLine.matches(PATTERN_UNKNOWN_OPERATOR))
 			throw new SyntaxErrorException(instPtr,
 					messages.getString(ERROR_PATTERN_UNKNOWN_OPERATOR));
@@ -287,18 +345,6 @@ public class Parser {
 		if (instLine.matches(PATTERN_NO_IP))
 			throw new SyntaxErrorException(instPtr,
 					messages.getString(ERROR_PATTERN_NO_IP));
-		if (instLine.matches(PATTERN_LD_MEM_IMM))
-			throw new SyntaxErrorException(instPtr,
-					messages.getString(ERROR_PATTERN_LD_MEM_IMM));
-		if (instLine.matches(PATTERN_LD_MEM_MEM))
-			throw new SyntaxErrorException(instPtr,
-					messages.getString(ERROR_PATTERN_LD_MEM_MEM));
-		if (instLine.matches(PATTERN_LD_I_MMEM))
-			throw new SyntaxErrorException(instPtr,
-					messages.getString(ERROR_PATTERN_LD_I_MMEM));
-		if (instLine.matches(PATTEN_LD_REG_REG))
-			throw new SyntaxErrorException(instPtr,
-					messages.getString(ERROR_PATTEN_LD_REG_REG));
 		if (instLine.matches(PATTERN_FORGOT_COLON))
 			throw new SyntaxErrorException(instPtr,
 					messages.getString(ERROR_PATTERN_FORGOT_COLON));
@@ -422,6 +468,19 @@ public class Parser {
 	 */
 	private static Instruction parseLoadInst(String instLine,
 			ArrayList<String> tokens) throws SyntaxErrorException {
+		if (instLine.matches(PATTERN_LD_MEM_IMM))
+			throw new SyntaxErrorException(instPtr,
+					messages.getString(ERROR_PATTERN_LD_MEM_IMM));
+		if (instLine.matches(PATTERN_LD_MEM_MEM))
+			throw new SyntaxErrorException(instPtr,
+					messages.getString(ERROR_PATTERN_LD_MEM_MEM));
+		if (instLine.matches(PATTERN_LD_I_MMEM))
+			throw new SyntaxErrorException(instPtr,
+					messages.getString(ERROR_PATTERN_LD_I_MMEM));
+		if (instLine.matches(PATTEN_LD_REG_REG))
+			throw new SyntaxErrorException(instPtr,
+					messages.getString(ERROR_PATTEN_LD_REG_REG));
+		
 		String dest = tokens.get(INDEX_DESTINATION);
 		String op1 = tokens.get(INDEX_OP1);
 		int[] p = new int[2];

@@ -2,7 +2,7 @@ package ramses;
 
 public class LogicalErrorException extends Exception{
 
-	private static final long serialVersionUID = 3522647953788823900L;
+	private static final long serialVersionUID = 1L;
 
 	/** Befehlscounter */
 	int instPtr;
@@ -18,12 +18,21 @@ public class LogicalErrorException extends Exception{
         this.errormsg = errormsg;
     }
     
+    public LogicalErrorException(String errormsg){
+    	this(-3, errormsg);
+    }
+    
     /**
      * toString method
      * @return String mit einer spezifischen Error Nachricht
      */
     @Override
     public String toString(){
-        return("SyntaxErrorException in Line "+ instPtr + ": " + errormsg);
+    	switch(instPtr){
+    		case -3:
+    			return("LogicalErrorException: " + errormsg);
+    		default:
+    			return("LogicalErrorException in Line "+ instPtr + ": " + errormsg);
+    	}
     }
 }
