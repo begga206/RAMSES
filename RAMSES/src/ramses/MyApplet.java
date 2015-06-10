@@ -32,11 +32,11 @@ import javax.swing.text.Element;
  */
 public class MyApplet extends JApplet {
 	private static final long serialVersionUID = 1L;
-	
+
 	public static final String ERROR_MIN_GT_MAX = "ERROR_MIN_GT_MAX";
 	public static final String ERROR_MAX_LT_MIN = "ERROR_MAX_LT_MIN";
 	public static final String ERROR_NOT_ALL_INPUT_SET = "ERROR_NOT_ALL_INPUT_SET";
-	
+
 	public static final String COMPILE = "COMPILE";
 	public static final String START = "START";
 	public static final String DEBUG = "DEBUG";
@@ -48,7 +48,7 @@ public class MyApplet extends JApplet {
 	public static final String CONSOLE = "CONSOLE";
 	public static final String COMPILING_SUCCESSFUL = "COMPILING_SUCCESSFUL";
 	public static final String INVALID_FILE_SIZE = "INVALID_FILE_SIZE";
-	
+
 	public static final String PROMPT = "RAMSES> ";
 	public static final String CLI_HELP_TEXT = "CLI_HELP_TEXT";
 	public static final String CMD_GUI = "gui";
@@ -60,14 +60,15 @@ public class MyApplet extends JApplet {
 	public static final String CMD_MAX = "max( -?\\d+)?";
 	public static final String CMD_HELP = "help";
 	public static final String ERROR_UNSUPPORTED_CMD = "This command is not supported.";
-	
+
 	public static final int MIN_VALUE = 0;
 	public static final int MAX_VALUE = 50;
-	
+
 	private int minValue;
 	private int maxValue;
-	
-	ResourceBundle messages = ResourceBundle.getBundle("ramses.MessagesBundle", Locale.getDefault());
+
+	ResourceBundle messages = ResourceBundle.getBundle("ramses.MessagesBundle",
+			Locale.getDefault());
 
 	// ///////////GUI ELEMENTE//////////
 	Container c;
@@ -98,7 +99,7 @@ public class MyApplet extends JApplet {
 	public void init() {
 		minValue = MIN_VALUE;
 		maxValue = MAX_VALUE;
-		
+
 		c = getContentPane();
 		c.setLayout(new GridLayout(1, 3));
 		leftPanel = new JPanel();
@@ -111,8 +112,9 @@ public class MyApplet extends JApplet {
 		console = new JTextArea(PROMPT);
 		console.setFont(new Font("monospaced", Font.PLAIN, 12));
 		((AbstractDocument) console.getDocument())
-		.setDocumentFilter(new NonEditableLineDocumentFilter());
-		PrintStream printStream = new PrintStream(new CustomOutputStream(console));
+				.setDocumentFilter(new NonEditableLineDocumentFilter());
+		PrintStream printStream = new PrintStream(new CustomOutputStream(
+				console));
 		System.setOut(printStream);
 		System.setErr(printStream);
 		compileButton = new JButton(messages.getString(COMPILE));
@@ -129,7 +131,7 @@ public class MyApplet extends JApplet {
 		inst = new ArrayList<>();
 
 		initListeners();
-		
+
 		c.add(new JScrollPane(console));
 	}
 
@@ -143,7 +145,7 @@ public class MyApplet extends JApplet {
 		buttonPanel.add(debugButton);
 		buttonPanel.add(nextButton);
 		buttonPanel.add(startButton);
-		
+
 		console.setEditable(false);
 		console.setLineWrap(true);
 		console.setRows(10);
@@ -157,15 +159,15 @@ public class MyApplet extends JApplet {
 		leftPanel.add(new JScrollPane(console));
 		leftPanel.add(buttonPanel);
 	}
-	
-	private void initCenterPanel(){
+
+	private void initCenterPanel() {
 		centerPanel.removeAll();
 		centerPanel.setLayout(new BorderLayout());
 		JPanel minMaxPanel = new JPanel();
 		final JTextField minTf = new JTextField(Integer.toString(minValue), 5);
 		final JTextField maxTf = new JTextField(Integer.toString(maxValue), 5);
 		JButton minButton = new JButton("set");
-		minButton.addActionListener(new ActionListener(){
+		minButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -177,10 +179,10 @@ public class MyApplet extends JApplet {
 					System.out.println(e);
 				}
 			}
-			
+
 		});
 		JButton maxButton = new JButton("set");
-		maxButton.addActionListener(new ActionListener(){
+		maxButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -192,7 +194,7 @@ public class MyApplet extends JApplet {
 					System.out.println(e);
 				}
 			}
-			
+
 		});
 		minMaxPanel.add(new JLabel("Min:"));
 		minMaxPanel.add(minTf);
@@ -203,7 +205,7 @@ public class MyApplet extends JApplet {
 		centerPanel.add(minMaxPanel, BorderLayout.NORTH);
 		centerPanel.add(inputPanel, BorderLayout.CENTER);
 	}
-	
+
 	/**
 	 * Füllt das mittlere Panel mit den Input-eingaben
 	 */
@@ -224,15 +226,16 @@ public class MyApplet extends JApplet {
 	 * Initialisiert die Buttonlistener
 	 */
 	private void initListeners() {
-		cliButton.addActionListener(new ActionListener(){
+		cliButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				console = new JTextArea(PROMPT);
 				console.setFont(new Font("monospaced", Font.PLAIN, 12));
 				((AbstractDocument) console.getDocument())
-				.setDocumentFilter(new NonEditableLineDocumentFilter());
-				PrintStream printStream = new PrintStream(new CustomOutputStream(console));
+						.setDocumentFilter(new NonEditableLineDocumentFilter());
+				PrintStream printStream = new PrintStream(
+						new CustomOutputStream(console));
 				System.setOut(printStream);
 				System.setErr(printStream);
 				leftPanel.removeAll();
@@ -241,9 +244,9 @@ public class MyApplet extends JApplet {
 				c.add(new JScrollPane(console));
 				revalidate();
 			}
-			
+
 		});
-		
+
 		compileButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -257,8 +260,9 @@ public class MyApplet extends JApplet {
 					}
 				}
 				try {
-					if(data.size() <= 2)
-						throw new SyntaxErrorException(-2, messages.getString(INVALID_FILE_SIZE));
+					if (data.size() <= 2)
+						throw new SyntaxErrorException(-2, messages
+								.getString(INVALID_FILE_SIZE));
 					input = Parser.parseInput(data.get(0));
 					output = Parser.parseOutput(data.get(1));
 					for (int i = 0; i < data.size() - 2; i++) {
@@ -294,27 +298,28 @@ public class MyApplet extends JApplet {
 						if (inputPanel.getComponent(i) instanceof InputLabel) {
 							InputLabel label = (InputLabel) inputPanel
 									.getComponent(i);
-							if(label.isRandom()){
+							if (label.isRandom()) {
 								int r = getRandom();
 								label.getInput().setValue(r);
 								label.setText(Integer.toString(r));
-							}else
+							} else
 								label.setValue();
 						}
 					}
 					ramses = new Ramses(input, output, inst);
 					ramses.start();
-					while(ramses.isLocked()){
-						//mehr polling als im erblühenden Schwarzwald
+					while (ramses.isLocked()) {
+						// mehr polling als im erblühenden Schwarzwald
 					}
 					createTable();
-					synchronized(ramses){
+					synchronized (ramses) {
 						ramses.notify();
 					}
 					debugButton.setEnabled(true);
 					compileButton.setEnabled(true);
 				} catch (NumberFormatException e) {
-					System.out.println(e + "\t" + messages.getString(VALID_INT) + "\n");
+					System.out.println(e + "\t" + messages.getString(VALID_INT)
+							+ "\n");
 				} catch (LogicalErrorException e) {
 					System.out.println(e);
 				}
@@ -330,37 +335,42 @@ public class MyApplet extends JApplet {
 						if (inputPanel.getComponent(i) instanceof InputLabel) {
 							InputLabel label = (InputLabel) inputPanel
 									.getComponent(i);
-							label.setValue();
+							if (label.isRandom()) {
+								int r = getRandom();
+								label.getInput().setValue(r);
+								label.setText(Integer.toString(r));
+							} else
+								label.setValue();
 						}
-						ramses = new Ramses(input, output, inst);
 					}
+					ramses = new Ramses(input, output, inst);
+					ramses.setDebug(true);
+					ramses.start();
+					debugButton.setEnabled(false);
+					startButton.setEnabled(false);
+					nextButton.setEnabled(true);
+					nextButton.doClick();
 				} catch (NumberFormatException e) {
 					System.out.println(e + "\t" + messages.getString(VALID_INT)
 							+ "\n");
 				} catch (LogicalErrorException e) {
 					System.out.println(e);
 				}
-				ramses.setDebug(true);
-				ramses.start();
-				debugButton.setEnabled(false);
-				startButton.setEnabled(false);
-				nextButton.setEnabled(true);
-				nextButton.doClick();
 			}
 		});
 
 		nextButton.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(!ramses.isAlive()){
+				if (!ramses.isAlive()) {
 					nextButton.setEnabled(false);
 					debugButton.setEnabled(true);
 					startButton.setEnabled(true);
 				}
-				if(!ramses.isLocked()){
+				if (!ramses.isLocked()) {
 					createTable();
-					synchronized(ramses){
+					synchronized (ramses) {
 						ramses.notify();
 					}
 				}
@@ -382,19 +392,20 @@ public class MyApplet extends JApplet {
 				data[i][j] = matrix.get(i).get(j);
 			}
 		}
-		table = new JTable(data, columnNames){
+		table = new JTable(data, columnNames) {
 			private static final long serialVersionUID = 1L;
 
-			public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
+			public Component prepareRenderer(TableCellRenderer renderer,
+					int row, int column) {
 				Component c = super.prepareRenderer(renderer, row, column);
-				if(this.isCellSelected(row, column))
+				if (this.isCellSelected(row, column))
 					c.setBackground(this.getSelectionBackground());
-				else{
-					if(data[row][column].equals("")){
+				else {
+					if (data[row][column].equals("")) {
 						c.setBackground(this.getBackground());
-					}else if(column == 0){
+					} else if (column == 0) {
 						c.setBackground(Color.lightGray);
-					}else{
+					} else {
 						c.setBackground(Color.orange);
 					}
 				}
@@ -403,28 +414,32 @@ public class MyApplet extends JApplet {
 		};
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		rightPanel.removeAll();
-		rightPanel.add(new JScrollPane(table,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+		rightPanel.add(new JScrollPane(table,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED),
+				BorderLayout.CENTER);
 		rightPanel.revalidate();
 	}
-	
-	private void setMinValue(int value) throws LogicalErrorException{
-		if(value >= maxValue)
-			throw new LogicalErrorException(messages.getString(ERROR_MIN_GT_MAX));
+
+	private void setMinValue(int value) throws LogicalErrorException {
+		if (value >= maxValue)
+			throw new LogicalErrorException(
+					messages.getString(ERROR_MIN_GT_MAX));
 		minValue = value;
 	}
-	
-	private void setMaxValue(int value) throws LogicalErrorException{
-		if(value <= minValue)
-			throw new LogicalErrorException(messages.getString(ERROR_MAX_LT_MIN));
+
+	private void setMaxValue(int value) throws LogicalErrorException {
+		if (value <= minValue)
+			throw new LogicalErrorException(
+					messages.getString(ERROR_MAX_LT_MIN));
 		maxValue = value;
 	}
-	
-	private int getRandom(){
+
+	private int getRandom() {
 		Random random = new Random();
 		return random.nextInt((maxValue - minValue) + 1) + minValue;
 	}
-	
-	
+
 	private class NonEditableLineDocumentFilter extends DocumentFilter {
 		@Override
 		public void insertString(DocumentFilter.FilterBypass fb, int offset,
@@ -464,7 +479,7 @@ public class MyApplet extends JApplet {
 					}
 					text += PROMPT;
 				}
-				
+
 				fb.replace(offset, length, text, attrs);
 			}
 		}
@@ -474,7 +489,7 @@ public class MyApplet extends JApplet {
 				if (cmd.matches(CMD_GUI)) {
 					c.removeAll();
 					((AbstractDocument) console.getDocument())
-					.setDocumentFilter(null);
+							.setDocumentFilter(null);
 					console.setText("");
 					initLeftPanel();
 					initCenterPanel();
@@ -496,38 +511,39 @@ public class MyApplet extends JApplet {
 					((AbstractDocument) console.getDocument())
 							.setDocumentFilter(new NonEditableLineDocumentFilter());
 				} else if (cmd.matches(CMD_RUN)) {
-					if(cmd.equals("run")){
+					if (cmd.equals("run")) {
 						for (int i = 0; i < input.length; i++) {
 							input[i].setValue(getRandom());
 						}
-					}else{
+					} else {
 						cmd = cmd.replace("run ", "");
-						try(Scanner sc = new Scanner(cmd)){
+						try (Scanner sc = new Scanner(cmd)) {
 							int i = 0;
-							while(sc.hasNext()){
+							while (sc.hasNext()) {
 								input[i].setValue(Integer.parseInt(sc.next()));
 								i++;
 							}
-							if(i < input.length)
-								throw new LogicalErrorException(messages.getString(ERROR_NOT_ALL_INPUT_SET));
+							if (i < input.length)
+								throw new LogicalErrorException(
+										messages.getString(ERROR_NOT_ALL_INPUT_SET));
 						}
 					}
 					run();
 				} else if (cmd.matches(CMD_MIN)) {
-					if(cmd.equals("min"))
+					if (cmd.equals("min"))
 						System.out.println("min = " + minValue);
-					else{
+					else {
 						cmd = cmd.replace("min ", "");
 						setMinValue(Integer.parseInt(cmd));
 					}
 				} else if (cmd.matches(CMD_MAX)) {
-					if(cmd.equals("max"))
+					if (cmd.equals("max"))
 						System.out.println("max = " + maxValue);
-					else{
+					else {
 						cmd = cmd.replace("max ", "");
 						setMaxValue(Integer.parseInt(cmd));
 					}
-				} else if (cmd.matches(CMD_HELP)){
+				} else if (cmd.matches(CMD_HELP)) {
 					System.out.println(messages.getString(CLI_HELP_TEXT));
 				}
 			} catch (NumberFormatException | LogicalErrorException e) {
@@ -548,18 +564,19 @@ public class MyApplet extends JApplet {
 					ramses.notify();
 				}
 				for (int i = 0; i < matrix.size(); i++) {
-					//String s = "\n";
+					// String s = "\n";
 					for (int j = 0; j < matrix.get(0).size(); j++) {
-						System.out.print(String.format("%-25s|",matrix.get(i).get(j)));
-						//s += "--------------------------";
+						System.out.print(String.format("%-25s|", matrix.get(i)
+								.get(j)));
+						// s += "--------------------------";
 					}
-					System.out.println();//s);
+					System.out.println();// s);
 				}
 			} catch (LogicalErrorException e) {
 				System.out.println(e);
 			}
 		}
-		
+
 		private void compile(String cmd) {
 			data = new ArrayList<>();
 			inst = new ArrayList<Instruction>();
