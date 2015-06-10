@@ -1036,7 +1036,7 @@ public class Ramses extends Thread {
 	
 	public void isMemInit(int index) throws LogicalErrorException{
 		if(s[index] == null)
-			throw new LogicalErrorException(iP-1, messages.getString(ERROR_MEM_NOT_INIT + index + "]"));
+			throw new LogicalErrorException(iP-1, messages.getString(ERROR_MEM_NOT_INIT)+ index + "]");
 	}
 	
 	public void isIInit(int index) throws LogicalErrorException{
