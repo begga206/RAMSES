@@ -13,7 +13,7 @@ import java.util.ResourceBundle;
 public class Ramses extends Thread {
 	public static final int MAX_MEM = 255;
 	public static final int MAX_INDEX = 5;
-	public static final int MAX_INSTRUCTIONS = 200;
+	public static final int MAX_INSTRUCTIONS = 2000;
 	public static final String OUTPUT = "OUTPUT";
 	public static final String ERROR_DIVISION_BY_ZERO = "ERROR_DIVISION_BY_ZERO";
 	public static final String ERROR_INDEX_OUT_OF_BOUNDS = "ERROR_INDEX_OUT_OF_BOUNDS";
@@ -53,6 +53,8 @@ public class Ramses extends Thread {
 	private boolean debug = false;
 	/** lock */
 	private volatile boolean locked = true;
+	/** Breakpoint */
+	private volatile int breakpoint = 0;
 	ResourceBundle messages = ResourceBundle.getBundle("ramses.MessagesBundle",
 			Locale.getDefault());
 
@@ -258,7 +260,7 @@ public class Ramses extends Thread {
 				break;
 			}
 			// nächste Instruktion starten
-			if (debug) {
+			if (debug && p.indexOf(inst) == breakpoint) {
 				locked = false;
 				wait();
 			}
@@ -1045,5 +1047,13 @@ public class Ramses extends Thread {
 					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 		if(i[index] == null)
 			throw new LogicalErrorException(iP-1, messages.getString(ERROR_INDEX_NOT_INIT + index));
+	}
+
+	public int getBreakpoint() {
+		return breakpoint;
+	}
+
+	public void setBreakpoint(int breakpoint) {
+		this.breakpoint = breakpoint;
 	}
 }

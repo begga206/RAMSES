@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -42,6 +41,7 @@ public class MyApplet extends JApplet {
 	public static final String DEBUG = "DEBUG";
 	public static final String NEXT_INST = "NEXT_INST";
 	public static final String CLI_KEY = "CLI_KEY";
+	public static final String BP_BUTTON = "BP_BUTTON";
 	public static final String INPUT = "INPUT";
 	public static final String VALID_INT = "VALID_INT";
 	public static final String EDITOR = "EDITOR";
@@ -66,6 +66,7 @@ public class MyApplet extends JApplet {
 
 	private int minValue;
 	private int maxValue;
+	private int breakpoint;
 
 	ResourceBundle messages = ResourceBundle.getBundle("ramses.MessagesBundle",
 			Locale.getDefault());
@@ -81,9 +82,11 @@ public class MyApplet extends JApplet {
 	JButton debugButton;
 	JButton nextButton;
 	JButton cliButton;
+	JButton setBpButton;
 	JTable table;
 	JTextArea editor;
 	JTextArea console;
+	JTextField bpTf;
 
 	// //////////RAMSES ELEMENTE////////
 	Input[] input;
@@ -99,6 +102,7 @@ public class MyApplet extends JApplet {
 	public void init() {
 		minValue = MIN_VALUE;
 		maxValue = MAX_VALUE;
+		breakpoint = 0;
 
 		c = getContentPane();
 		c.setLayout(new GridLayout(1, 3));
@@ -110,6 +114,7 @@ public class MyApplet extends JApplet {
 		editor = new JTextArea(40, 70);
 		editor.setLineWrap(true);
 		console = new JTextArea(PROMPT);
+		console.setCaretPosition(PROMPT.length());
 		console.setFont(new Font("monospaced", Font.PLAIN, 12));
 		((AbstractDocument) console.getDocument())
 				.setDocumentFilter(new NonEditableLineDocumentFilter());
@@ -122,6 +127,8 @@ public class MyApplet extends JApplet {
 		debugButton = new JButton(messages.getString(DEBUG));
 		nextButton = new JButton(messages.getString(NEXT_INST));
 		cliButton = new JButton(messages.getString(CLI_KEY));
+		setBpButton = new JButton(messages.getString(BP_BUTTON));
+		bpTf = new JTextField(Integer.toString(breakpoint),5);
 		startButton.setEnabled(false);
 		debugButton.setEnabled(false);
 		nextButton.setEnabled(false);
@@ -202,8 +209,12 @@ public class MyApplet extends JApplet {
 		minMaxPanel.add(new JLabel("Max:"));
 		minMaxPanel.add(maxTf);
 		minMaxPanel.add(maxButton);
+		JPanel southPanel = new JPanel();
+		southPanel.add(bpTf);
+		southPanel.add(setBpButton);
 		centerPanel.add(minMaxPanel, BorderLayout.NORTH);
 		centerPanel.add(inputPanel, BorderLayout.CENTER);
+		centerPanel.add(southPanel, BorderLayout.SOUTH);
 	}
 
 	/**
@@ -345,6 +356,7 @@ public class MyApplet extends JApplet {
 					}
 					ramses = new Ramses(input, output, inst);
 					ramses.setDebug(true);
+					ramses.setBreakpoint(breakpoint);
 					ramses.start();
 					debugButton.setEnabled(false);
 					startButton.setEnabled(false);
@@ -371,10 +383,26 @@ public class MyApplet extends JApplet {
 				if (!ramses.isLocked()) {
 					createTable();
 					synchronized (ramses) {
+						ramses.setBreakpoint(breakpoint);
 						ramses.notify();
 					}
 				}
 			}
+		});
+		
+		setBpButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					String bp = bpTf.getText();
+					breakpoint = Integer.parseInt(bp);
+				} catch (NumberFormatException e) {
+					bpTf.setText(Integer.toString(breakpoint));
+					System.out.println(e);
+				}
+			}
+			
 		});
 	}
 
@@ -467,7 +495,6 @@ public class MyApplet extends JApplet {
 			int index = root.getElementIndex(offset);
 			Element cur = root.getElement(index);
 			int promptPosition = cur.getStartOffset() + PROMPT.length();
-			// As Reverend Gonzo says:
 			if (index == count - 1 && offset - promptPosition >= 0) {
 				if (text.equals("\n")) {
 					String cmd = doc.getText(promptPosition, offset
@@ -493,7 +520,6 @@ public class MyApplet extends JApplet {
 					console.setText("");
 					initLeftPanel();
 					initCenterPanel();
-					initListeners();
 					fillInputPanel();
 					c.add(leftPanel);
 					c.add(centerPanel);
