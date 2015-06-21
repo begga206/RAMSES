@@ -40,6 +40,7 @@ public class MyApplet extends JApplet {
 	public static final String START = "START";
 	public static final String DEBUG = "DEBUG";
 	public static final String NEXT_INST = "NEXT_INST";
+	public static final String CONTINUE = "CONTINUE";
 	public static final String CLI_KEY = "CLI_KEY";
 	public static final String BP_BUTTON = "BP_BUTTON";
 	public static final String INPUT = "INPUT";
@@ -80,6 +81,7 @@ public class MyApplet extends JApplet {
 	JButton compileButton;
 	JButton startButton;
 	JButton debugButton;
+	JButton continueButton;
 	JButton nextButton;
 	JButton cliButton;
 	JButton setBpButton;
@@ -125,13 +127,15 @@ public class MyApplet extends JApplet {
 		compileButton = new JButton(messages.getString(COMPILE));
 		startButton = new JButton(messages.getString(START));
 		debugButton = new JButton(messages.getString(DEBUG));
+		continueButton = new JButton(messages.getString(CONTINUE));
 		nextButton = new JButton(messages.getString(NEXT_INST));
 		cliButton = new JButton(messages.getString(CLI_KEY));
 		setBpButton = new JButton(messages.getString(BP_BUTTON));
 		bpTf = new JTextField(Integer.toString(breakpoint),5);
 		startButton.setEnabled(false);
 		debugButton.setEnabled(false);
-		nextButton.setEnabled(false);
+		continueButton.setVisible(false);
+		nextButton.setVisible(false);
 
 		input = null;
 		data = new ArrayList<>();
@@ -150,6 +154,7 @@ public class MyApplet extends JApplet {
 		buttonPanel.add(cliButton);
 		buttonPanel.add(compileButton);
 		buttonPanel.add(debugButton);
+		buttonPanel.add(continueButton);
 		buttonPanel.add(nextButton);
 		buttonPanel.add(startButton);
 
@@ -358,10 +363,16 @@ public class MyApplet extends JApplet {
 					ramses.setDebug(true);
 					ramses.setBreakpoint(breakpoint);
 					ramses.start();
-					debugButton.setEnabled(false);
-					startButton.setEnabled(false);
-					nextButton.setEnabled(true);
-					nextButton.doClick();
+					debugButton.setVisible(false);
+					startButton.setVisible(false);
+					continueButton.setVisible(true);
+					nextButton.setVisible(true);
+					new Thread(){
+						public void run(){
+							while(ramses.isLocked()){}
+							createTable();
+						}
+					}.start();
 				} catch (NumberFormatException e) {
 					System.out.println(e + "\t" + messages.getString(VALID_INT)
 							+ "\n");
@@ -371,20 +382,51 @@ public class MyApplet extends JApplet {
 			}
 		});
 
+		continueButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!ramses.isLocked()) {
+					synchronized (ramses) {
+						ramses.setBreakpoint(breakpoint);
+						ramses.notify();
+						new Thread(){
+							public void run(){
+								while(ramses.isLocked()){}
+								createTable();
+								if (!ramses.isAlive()) {
+									continueButton.setVisible(false);
+									nextButton.setVisible(false);
+									debugButton.setVisible(true);
+									startButton.setVisible(true);
+								}
+							}
+						}.start();
+					}
+				}
+			}
+		});
+		
 		nextButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (!ramses.isAlive()) {
-					nextButton.setEnabled(false);
-					debugButton.setEnabled(true);
-					startButton.setEnabled(true);
-				}
 				if (!ramses.isLocked()) {
-					createTable();
 					synchronized (ramses) {
-						ramses.setBreakpoint(breakpoint);
+						ramses.setBreakpoint(-1);
 						ramses.notify();
+						new Thread(){
+							public void run(){
+								while(ramses.isLocked()){}
+								createTable();
+								if (!ramses.isAlive()) {
+									continueButton.setVisible(false);
+									nextButton.setVisible(false);
+									debugButton.setVisible(true);
+									startButton.setVisible(true);
+								}
+							}
+						}.start();
 					}
 				}
 			}

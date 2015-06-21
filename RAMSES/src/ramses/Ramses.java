@@ -260,7 +260,7 @@ public class Ramses extends Thread {
 				break;
 			}
 			// nächste Instruktion starten
-			if (debug && p.indexOf(inst) == breakpoint) {
+			if (debug && (p.indexOf(inst) == breakpoint || breakpoint == -1)) {
 				locked = false;
 				wait();
 			}
