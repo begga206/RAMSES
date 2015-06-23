@@ -13,10 +13,8 @@ public class InputLabel extends JPanel {
 	public InputLabel(Input in){
 		super();
 		tf = new JTextField(10);
-		if(in.hasValue()){
+		if(in.hasValue())
 			tf.setText(Integer.toString(in.getValue()));
-			tf.setEditable(false);
-		}
 		random = new Checkbox("random");
 		this.input = in;
 		this.add(new JLabel("s[" + input.getIndex() + "]: "));
