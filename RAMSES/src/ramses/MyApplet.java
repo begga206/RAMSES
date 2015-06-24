@@ -131,7 +131,7 @@ public class MyApplet extends JApplet {
 		nextButton = new JButton(messages.getString(NEXT_INST));
 		cliButton = new JButton(messages.getString(CLI_KEY));
 		setBpButton = new JButton(messages.getString(BP_BUTTON));
-		bpTf = new JTextField(Integer.toString(breakpoint),5);
+		bpTf = new JTextField(Integer.toString(breakpoint), 5);
 		startButton.setEnabled(false);
 		debugButton.setEnabled(false);
 		continueButton.setVisible(false);
@@ -367,9 +367,10 @@ public class MyApplet extends JApplet {
 					startButton.setVisible(false);
 					continueButton.setVisible(true);
 					nextButton.setVisible(true);
-					new Thread(){
-						public void run(){
-							while(ramses.isLocked()){}
+					new Thread() {
+						public void run() {
+							while (ramses.isLocked()) {
+							}
 							createTable();
 						}
 					}.start();
@@ -390,9 +391,10 @@ public class MyApplet extends JApplet {
 					synchronized (ramses) {
 						ramses.setBreakpoint(breakpoint);
 						ramses.notify();
-						new Thread(){
-							public void run(){
-								while(ramses.isLocked()){}
+						new Thread() {
+							public void run() {
+								while (ramses.isLocked()) {
+								}
 								createTable();
 								if (!ramses.isAlive()) {
 									continueButton.setVisible(false);
@@ -406,7 +408,7 @@ public class MyApplet extends JApplet {
 				}
 			}
 		});
-		
+
 		nextButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -415,9 +417,10 @@ public class MyApplet extends JApplet {
 					synchronized (ramses) {
 						ramses.setBreakpoint(-1);
 						ramses.notify();
-						new Thread(){
-							public void run(){
-								while(ramses.isLocked()){}
+						new Thread() {
+							public void run() {
+								while (ramses.isLocked()) {
+								}
 								createTable();
 								if (!ramses.isAlive()) {
 									continueButton.setVisible(false);
@@ -431,7 +434,7 @@ public class MyApplet extends JApplet {
 				}
 			}
 		});
-		
+
 		setBpButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -444,7 +447,7 @@ public class MyApplet extends JApplet {
 					System.out.println(e);
 				}
 			}
-			
+
 		});
 	}
 
@@ -566,8 +569,10 @@ public class MyApplet extends JApplet {
 					c.add(leftPanel);
 					c.add(centerPanel);
 					c.add(rightPanel);
-					if (ramses != null)
+					if (ramses != null){
 						startButton.setEnabled(true);
+						debugButton.setEnabled(true);
+					}
 					c.setVisible(false);
 					c.setVisible(true);
 				} else if (cmd.matches(CMD_COMPILE)) {
@@ -624,22 +629,31 @@ public class MyApplet extends JApplet {
 				ramses.setDebug(false);
 				ramses = new Ramses(input, output, inst);
 				ramses.start();
-				while (ramses.isLocked()) {
-					// mehr polling als im erblühenden Schwarzwald
-				}
-				matrix = ramses.getTable();
-				synchronized (ramses) {
-					ramses.notify();
-				}
-				for (int i = 0; i < matrix.size(); i++) {
-					// String s = "\n";
-					for (int j = 0; j < matrix.get(0).size(); j++) {
-						System.out.print(String.format("%-25s|", matrix.get(i)
-								.get(j)));
-						// s += "--------------------------";
+				new Thread() {
+					public void run() {
+						while (ramses.isAlive()) {
+							if (!ramses.isLocked()) {
+								matrix = ramses.getTable();
+								synchronized (ramses) {
+									ramses.notify();
+								}
+								for (int i = 0; i < matrix.size(); i++) {
+									// String s = "\n";
+									for (int j = 0; j < matrix.get(0).size(); j++) {
+										System.out
+												.print(String.format("%-25s|",
+														matrix.get(i).get(j)));
+										// s += "--------------------------";
+									}
+									System.out.println();// s);
+								}
+								return;
+							}
+							
+						}
 					}
-					System.out.println();// s);
-				}
+				}.start();
+
 			} catch (LogicalErrorException e) {
 				System.out.println(e);
 			}
