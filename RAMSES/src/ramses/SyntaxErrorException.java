@@ -2,15 +2,19 @@ package ramses;
 
 /**
  * Einfache Exceptionklasse für Syntax-Errors beim Einlesen
- * @author Lukas
+ * @author Lukas Becker
+ * @author Andreas Paul
  *
  */
 public class SyntaxErrorException extends Exception {
-	private static final long serialVersionUID = -95523412616969117L;
+	private static final long serialVersionUID = 1L;
+	
+	/** Wenn ein Fehler nicht im Zuge einer Instruktion auftrat*/
+	public final static int NO_LINE = -3;
 	/** Befehlscounter */
-	int instPtr;
+	private int instPtr;
 	/** Error Nachricht*/
-    String errormsg;
+    private String errormsg;
     
     /**
      * Constructor
@@ -20,6 +24,10 @@ public class SyntaxErrorException extends Exception {
     	this.instPtr = instPtr;
         this.errormsg = errormsg;
     }
+   
+    public SyntaxErrorException(String errormsg){
+    	this(NO_LINE, errormsg);
+    }
     
     /**
      * toString method
@@ -27,6 +35,9 @@ public class SyntaxErrorException extends Exception {
      */
     @Override
     public String toString(){
-        return("SyntaxErrorException in Line "+ instPtr + ": " + errormsg);
+    	if(instPtr == NO_LINE)
+    		return("SyntaxErrorException: " + errormsg);
+    	else
+    		return("SyntaxErrorException in Line "+ instPtr + ": " + errormsg);
     }
 }

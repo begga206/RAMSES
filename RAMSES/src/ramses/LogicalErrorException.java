@@ -1,13 +1,20 @@
 package ramses;
 
+/**
+ * Einfache Exceptionklasse für logische Fehler innerhalb des RAM Kontext
+ * @author Lukas Becker
+ * @author Andreas Paul
+ */
 public class LogicalErrorException extends Exception{
 
 	private static final long serialVersionUID = 1L;
-
+	
+	/** Wenn ein Fehler nicht im Zuge einer Instruktion auftrat*/
+	public final static int NO_LINE = -3;
 	/** Befehlscounter */
-	int instPtr;
+	private int instPtr;
 	/** Error Nachricht*/
-    String errormsg;
+    private String errormsg;
     
     /**
      * Constructor
@@ -19,7 +26,7 @@ public class LogicalErrorException extends Exception{
     }
     
     public LogicalErrorException(String errormsg){
-    	this(-3, errormsg);
+    	this(NO_LINE, errormsg);
     }
     
     /**
@@ -29,7 +36,7 @@ public class LogicalErrorException extends Exception{
     @Override
     public String toString(){
     	switch(instPtr){
-    		case -3:
+    		case NO_LINE:
     			return("LogicalErrorException: " + errormsg);
     		default:
     			return("LogicalErrorException in Line "+ instPtr + ": " + errormsg);

@@ -7,30 +7,41 @@ import java.util.ResourceBundle;
 /**
  * Ramsesklasse emuliert eine RAM
  * 
- * @author Lukas
- *
+ * @author Lukas Becker
+ * @author Andreas Paul
  */
 public class Ramses extends Thread {
+	
+	//----------------------------Konstanten-----------------------------------
 	public static final int MAX_MEM = 255;
 	public static final int MAX_INDEX = 5;
 	public static final int MAX_INSTRUCTIONS = 2000;
+	public static final int NEXT_INST = -1;
 	public static final String OUTPUT = "OUTPUT";
-	public static final String ERROR_DIVISION_BY_ZERO = "ERROR_DIVISION_BY_ZERO";
-	public static final String ERROR_INDEX_OUT_OF_BOUNDS = "ERROR_INDEX_OUT_OF_BOUNDS";
-	public static final String ERROR_MEMORY_OUT_OF_BOUNDS = "ERROR_MEMORY_OUT_OF_BOUNDS";
-	public static final String ERROR_JUMP_INVALID = "ERROR_JUMP_INVALID";
-	public static final String ERROR_NO_HALT_INST = "ERROR_NO_HALT_INST";
-	public static final String ERROR_A_NOT_INIT = "ERROR_A_NOT_INIT";
-	public static final String ERROR_MEM_NOT_INIT = "ERROR_MEM_NOT_INIT";
-	public static final String ERROR_INDEX_NOT_INIT = "ERROR_INDEX_NOT_INIT";
-	public static final String ERROR_REACHED_MAX_INST = "ERROR_REACHED_MAX_INST";
-
+	public static final String INSTRUCTION = "INSTRUCTION";
+	
 	public static final String A_ADD = "a <- a + ";
 	public static final String A_SUB = "a <- a - ";
 	public static final String A_MUL = "a <- a * ";
 	public static final String A_DIV = "a <- a div ";
 	public static final String A_MOD = "a <- a mod ";
+	
+	//--------------------------Fehlermeldungen--------------------------------
+	public static final String ERROR_DIVISION_BY_ZERO = 
+			"ERROR_DIVISION_BY_ZERO";
+	public static final String ERROR_INDEX_OUT_OF_BOUNDS = 
+			"ERROR_INDEX_OUT_OF_BOUNDS";
+	public static final String ERROR_MEMORY_OUT_OF_BOUNDS = 
+			"ERROR_MEMORY_OUT_OF_BOUNDS";
+	public static final String ERROR_JUMP_INVALID = "ERROR_JUMP_INVALID";
+	public static final String ERROR_NO_HALT_INST = "ERROR_NO_HALT_INST";
+	public static final String ERROR_A_NOT_INIT = "ERROR_A_NOT_INIT";
+	public static final String ERROR_MEM_NOT_INIT = "ERROR_MEM_NOT_INIT";
+	public static final String ERROR_INDEX_NOT_INIT = "ERROR_INDEX_NOT_INIT";
+	public static final String ERROR_REACHED_MAX_INST = 
+			"ERROR_REACHED_MAX_INST";
 
+	//---------------------------Attribute-------------------------------------
 	/** Instruction Counter */
 	private static int counter;
 	/** Instruction Pointer */
@@ -55,9 +66,11 @@ public class Ramses extends Thread {
 	private volatile boolean locked = true;
 	/** Breakpoint */
 	private volatile int breakpoint = 0;
+	/** Internationalisierung */
 	ResourceBundle messages = ResourceBundle.getBundle("ramses.MessagesBundle",
 			Locale.getDefault());
 
+	//----------------------------Konstruktor----------------------------------
 	/**
 	 * Konstruktor
 	 * 
@@ -81,11 +94,13 @@ public class Ramses extends Thread {
 			}
 		}
 		if(!hasHalt)
-			throw new LogicalErrorException(messages.getString(ERROR_NO_HALT_INST));
+			throw new LogicalErrorException(messages.getString(
+					ERROR_NO_HALT_INST));
 		i = new Integer[MAX_INDEX];
 		table = new ArrayList<ArrayList<String>>();
 	}
 
+	//-----------------------------Methoden------------------------------------
 	/**
 	 * Initialisiert den Datenspeicher
 	 * 
@@ -97,7 +112,7 @@ public class Ramses extends Thread {
 		table = new ArrayList<ArrayList<String>>();
 		ArrayList<String> header = new ArrayList<>();
 		table.add(header);
-		header.add(messages.getString("INSTRUCTION"));
+		header.add(messages.getString(INSTRUCTION));
 		header.add("a");
 
 		// Finde größten Index und erstelle Array mit diesem als max
@@ -129,12 +144,18 @@ public class Ramses extends Thread {
 			try {
 				if (!debug)
 					locked = true;
+				//Instruktionsdurchläufe auf Null setzen
 				counter = 0;
+				//Instruktionszeiger auf erste Instruktion
 				iP = 0;
+				//Akku noch nicht initialisert
 				a = null;
+				//Datenspeicher initialisieren
 				initS();
+				//Indexregister initialisieren
 				i = new Integer[MAX_INDEX];
-				process(p.get(0));
+				//Erste Instruktion ausführen
+				process(p.get(iP));
 				if (!debug) {
 					sleep(100);// TODO: Lock klasse
 					locked = false;
@@ -159,8 +180,10 @@ public class Ramses extends Thread {
 	 */
 	private synchronized void process(Instruction inst)
 			throws LogicalErrorException {
+		//Im Debugmodus, RAMSES 'locken', um inkonsestente Daten zu verhindern
 		if (debug)
 			locked = true;
+		//Instruktionszeiger auf nächste Instruktion zeigen lassen
 		iP++;
 		counter++;
 		try { // Die Instruktion mit der richtigen Funktion aufrufen
@@ -259,13 +282,19 @@ public class Ramses extends Thread {
 			default:
 				break;
 			}
-			// nächste Instruktion starten
-			if (debug && (p.indexOf(inst) == breakpoint || breakpoint == -1)) {
+			//Im Debugmodus: Nach Ausführen der Instruktion RAMSES 'entlocken'
+			//und auf ein notify() des Users warten
+			if (debug && (p.indexOf(inst) == breakpoint || 
+					breakpoint == NEXT_INST)) {
 				locked = false;
 				wait();
 			}
+			//Falls zu viele Instruktionen ausgeführt wurden, z.B. aufgrund 
+			//einer Endlosschleife, soll eine Exception geworfen werden
 			if(counter == MAX_INSTRUCTIONS)
-				throw new LogicalErrorException(messages.getString(ERROR_REACHED_MAX_INST));
+				throw new LogicalErrorException(
+						messages.getString(ERROR_REACHED_MAX_INST));
+			// nächste Instruktion starten
 			process(p.get(iP));
 		} catch (RuntimeException e) {
 			System.out.println(e);
@@ -274,9 +303,7 @@ public class Ramses extends Thread {
 		}
 	}
 
-	// //////////////////ARITHMETIK
-	// INSTRUKTIONEN///////////////////////////////////
-
+	//-------------------ARITHMETIK INSTRUKTIONEN------------------------------
 	/**
 	 * a <- a + imm
 	 * 
@@ -545,9 +572,7 @@ public class Ramses extends Thread {
 		fillTable("a", Integer.toString(a));
 	}
 
-	// /////////////////////////////HALT
-	// INSTRUKTION////////////////////////////////
-
+	//------------------------HALT INSTRUKTION---------------------------------
 	/**
 	 * halt Instruktion
 	 * 
@@ -561,9 +586,7 @@ public class Ramses extends Thread {
 		}
 	}
 
-	// //////////////////////////INDEX
-	// INSTRUKTIONEN////////////////////////////////
-
+	//------------------------INDEX INSTRUKTIONEN------------------------------
 	/**
 	 * i <- i - 1
 	 * 
@@ -596,9 +619,7 @@ public class Ramses extends Thread {
 		fillTable("i" + inst.getP0(), Integer.toString(i[inst.getP0()]));
 	}
 
-	// ////////////////////////////LADE
-	// INSTRUKTIONEN///////////////////////////////
-
+	//-------------------------LADE INSTRUKTIONEN------------------------------
 	/**
 	 * reg <- imm
 	 * 
@@ -729,9 +750,7 @@ public class Ramses extends Thread {
 					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 	}
 
-	// /////////////////////////////JUMP
-	// INSTRUKTIONEN//////////////////////////////
-
+	//----------------------JUMP INSTRUKTIONEN---------------------------------
 	/**
 	 * jump x
 	 * 
@@ -806,7 +825,7 @@ public class Ramses extends Thread {
 			regValue = Integer.toString(a);
 		} else{
 			isIInit(inst.getP0());
-			if (inst.getP0() >= 0) {
+			if (i[inst.getP0()] >= 0) {
 				iP = inst.getP1();
 			}
 			reg = "i" + inst.getP0();
@@ -841,7 +860,7 @@ public class Ramses extends Thread {
 			regValue = Integer.toString(a);
 		} else{
 			isIInit(inst.getP0());
-			if (inst.getP0() > 0) {
+			if (i[inst.getP0()] > 0) {
 				iP = inst.getP1();
 			}
 			reg = "i" + inst.getP0();
@@ -877,7 +896,7 @@ public class Ramses extends Thread {
 			regValue = Integer.toString(a);
 		} else{
 			isIInit(inst.getP0());
-			if (inst.getP0() <= 0) {
+			if (i[inst.getP0()] <= 0) {
 				iP = inst.getP1();
 			}
 			reg = "i" + inst.getP0();
@@ -912,7 +931,7 @@ public class Ramses extends Thread {
 			regValue = Integer.toString(a);
 		} else{
 			isIInit(inst.getP0());
-			if (inst.getP0() < 0) {
+			if (i[inst.getP0()] < 0) {
 				iP = inst.getP1();
 			}
 			reg = "i" + inst.getP0();
@@ -947,7 +966,7 @@ public class Ramses extends Thread {
 			regValue = Integer.toString(a);
 		} else{
 			isIInit(inst.getP0());
-			if (inst.getP0() != 0) {
+			if (i[inst.getP0()] != 0) {
 				iP = inst.getP1();
 			}
 			reg = "i" + inst.getP0();
@@ -959,9 +978,7 @@ public class Ramses extends Thread {
 		fillTable(reg, regValue);
 	}
 
-	// //////////////////TABELLEN
-	// FUNKTIONEN////////////////////////////////////////
-
+	//------------------------Tabellenmethoden---------------------------------
 	/**
 	 * Fügt der Programmtabelle eine neue Reihe zu
 	 * 
@@ -1010,6 +1027,7 @@ public class Ramses extends Thread {
 		line.set(index, value);
 	}
 
+	//-------------------------Getter und Setter-------------------------------
 	/**
 	 * Gibt die Programmtabelle zurück
 	 * 
@@ -1033,12 +1051,14 @@ public class Ramses extends Thread {
 	
 	public void isAInit() throws LogicalErrorException{
 		if(a == null)
-			throw new LogicalErrorException(iP-1, messages.getString(ERROR_A_NOT_INIT));
+			throw new LogicalErrorException(iP-1, 
+					messages.getString(ERROR_A_NOT_INIT));
 	}
 	
 	public void isMemInit(int index) throws LogicalErrorException{
 		if(s[index] == null)
-			throw new LogicalErrorException(iP-1, messages.getString(ERROR_MEM_NOT_INIT)+ index + "]");
+			throw new LogicalErrorException(iP-1, 
+					messages.getString(ERROR_MEM_NOT_INIT)+ index + "]");
 	}
 	
 	public void isIInit(int index) throws LogicalErrorException{
@@ -1046,7 +1066,8 @@ public class Ramses extends Thread {
 			throw new LogicalErrorException(iP - 1,
 					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
 		if(i[index] == null)
-			throw new LogicalErrorException(iP-1, messages.getString(ERROR_INDEX_NOT_INIT + index));
+			throw new LogicalErrorException(iP-1, 
+					messages.getString(ERROR_INDEX_NOT_INIT + index));
 	}
 
 	public int getBreakpoint() {

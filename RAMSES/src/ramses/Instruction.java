@@ -1,17 +1,27 @@
 package ramses;
 
 /**
- * Eine einfache Klasse, die die wichtigsten Inhalte einer RAM Befehlszeile beinhaltet.
- * @author Lukas
+ * Eine einfache Klasse, die die wichtigsten Inhalte einer RAM Befehlszeile 
+ * beinhaltet.
+ * @author Lukas Becker
+ * @author Andreas Paul
  *
  */
 public class Instruction {
+	//--------------------------Konstanten-------------------------------------
+	/** 
+	 * Wert wird verwendet, wenn ein Parameter keinen gültigen Wert enthalten
+	 * soll
+	 */
 	public static final int NOT_DEF = -2;
+	
+	//---------------------------Attribute-------------------------------------
 	/** Tag gibt Aufschluss über den RAM Befehl */
 	private InstructionTag instTag;
 	/** Array mit Parametern für diesen RAM Befehl */
 	private int[] param;
 	
+	//--------------------------Konstruktoren----------------------------------
 	/**
 	 * Eine RAM Befehlszeile besteht aus einem Befehlstag und 2 Paramtern
 	 * @param instTag
@@ -31,10 +41,12 @@ public class Instruction {
 		this(instTag, NOT_DEF, NOT_DEF);
 	}
 	
+	//----------------------------Methoden-------------------------------------
 	public String toString(){
 		return instTag.toString() + " | " + param[0] + " | " + param[1];
 	}
-	//---------------------Getter-----------------------------
+	
+	//------------------------------Getter-------------------------------------
 	public InstructionTag getInstTag() {
 		return instTag;
 	}

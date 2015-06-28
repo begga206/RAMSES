@@ -2,7 +2,8 @@ package ramses;
 
 /**
  * Enum mit Tags für alle vorhandenen RAM Befehle
- * @author Lukas
+ * @author Lukas Becker
+ * @author Andreas Paul
  *
  */
 public enum InstructionTag {

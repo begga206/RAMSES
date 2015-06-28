@@ -32,10 +32,17 @@ import javax.swing.text.Element;
 public class MyApplet extends JApplet {
 	private static final long serialVersionUID = 1L;
 
+	//----------------------Errormessages--------------------------------------
 	public static final String ERROR_MIN_GT_MAX = "ERROR_MIN_GT_MAX";
 	public static final String ERROR_MAX_LT_MIN = "ERROR_MAX_LT_MIN";
-	public static final String ERROR_NOT_ALL_INPUT_SET = "ERROR_NOT_ALL_INPUT_SET";
-
+	public static final String ERROR_NOT_ALL_INPUT_SET = 
+			"ERROR_NOT_ALL_INPUT_SET";
+	public static final String ERROR_NO_COMPILED_PROG = 
+			"ERROR_NO_COMPILED_PROG";
+	public static final String ERROR_WRONG_COMPILE_FORMAT = 
+			"ERROR_WRONG_COMPILE_FORMAT";
+	public static final String ERROR_VALID_INT = "ERROR_VALID_INT";
+	//---------------------Button/Label Namen----------------------------------
 	public static final String COMPILE = "COMPILE";
 	public static final String START = "START";
 	public static final String DEBUG = "DEBUG";
@@ -44,35 +51,46 @@ public class MyApplet extends JApplet {
 	public static final String CLI_KEY = "CLI_KEY";
 	public static final String BP_BUTTON = "BP_BUTTON";
 	public static final String INPUT = "INPUT";
-	public static final String VALID_INT = "VALID_INT";
 	public static final String EDITOR = "EDITOR";
 	public static final String CONSOLE = "CONSOLE";
+	
+	//-----------------------Konsolennachrichten-------------------------------
 	public static final String COMPILING_SUCCESSFUL = "COMPILING_SUCCESSFUL";
 	public static final String INVALID_FILE_SIZE = "INVALID_FILE_SIZE";
 
+	//------------------CLI Kommandos/Prompt/Nachrichten-----------------------
 	public static final String PROMPT = "RAMSES> ";
 	public static final String CLI_HELP_TEXT = "CLI_HELP_TEXT";
 	public static final String CMD_GUI = "gui";
 	public static final String CMD_COMPILE = "compile .+\\.txt";
+	public static final String CMD_WRONG_COMPILE = "compile.*";
 	public static final String CMD_RUN = "run( -?\\d+)*";
 	public static final String CMD_DEBUG = "debug";
 	public static final String CMD_CLEAR = "clear";
 	public static final String CMD_MIN = "min( -?\\d+)?";
 	public static final String CMD_MAX = "max( -?\\d+)?";
 	public static final String CMD_HELP = "help";
-	public static final String ERROR_UNSUPPORTED_CMD = "This command is not supported.";
+	public static final String ERROR_UNSUPPORTED_CMD = 
+			"This command is not supported.";
 
+	//-----------------------Default MIN und MAX Werte-------------------------
 	public static final int MIN_VALUE = 0;
 	public static final int MAX_VALUE = 50;
 
+	//-------------------------Attribute---------------------------------------
+	/** aktueller MIN Wert */
 	private int minValue;
+	/** aktueller MAX Wert */
 	private int maxValue;
+	/** Ist ein gültiges Programm kompiliert */
+	private boolean compiled;
+	/** aktueller Breakpoint */
 	private int breakpoint;
-
+	/** Internationalisierung */
 	ResourceBundle messages = ResourceBundle.getBundle("ramses.MessagesBundle",
 			Locale.getDefault());
 
-	// ///////////GUI ELEMENTE//////////
+	//----------------------------GUI Elemente---------------------------------
 	Container c;
 	JPanel leftPanel;
 	JPanel centerPanel;
@@ -90,7 +108,7 @@ public class MyApplet extends JApplet {
 	JTextArea console;
 	JTextField bpTf;
 
-	// //////////RAMSES ELEMENTE////////
+	//---------------------------RAMSES Elemente-------------------------------
 	Input[] input;
 	int[] output;
 	ArrayList<String> data;
@@ -98,14 +116,18 @@ public class MyApplet extends JApplet {
 	ArrayList<ArrayList<String>> matrix;
 	Ramses ramses;
 
+	//--------------------------Initialisierung-------------------------------
 	/**
 	 * Initialisiert die Oberfläche mit Komponenten
 	 */
 	public void init() {
+		//Setze die Attribute
 		minValue = MIN_VALUE;
 		maxValue = MAX_VALUE;
 		breakpoint = 0;
+		compiled = false;
 
+		//Initialisiere GUI Elemente
 		c = getContentPane();
 		c.setLayout(new GridLayout(1, 3));
 		leftPanel = new JPanel();
@@ -137,12 +159,16 @@ public class MyApplet extends JApplet {
 		continueButton.setVisible(false);
 		nextButton.setVisible(false);
 
+		//Initialisiere RAMSES Elemente
 		input = null;
 		data = new ArrayList<>();
 		inst = new ArrayList<>();
 
+		//Initialisiere Listeners
 		initListeners();
 
+		//Das Applet befindet sich Anfangs im CLI, also nur die Konsole zur 
+		//ContentPane adden
 		c.add(new JScrollPane(console));
 	}
 
@@ -172,6 +198,9 @@ public class MyApplet extends JApplet {
 		leftPanel.add(buttonPanel);
 	}
 
+	/**
+	 * Initialisere das mittlere Panel
+	 */
 	private void initCenterPanel() {
 		centerPanel.removeAll();
 		centerPanel.setLayout(new BorderLayout());
@@ -242,33 +271,43 @@ public class MyApplet extends JApplet {
 	 * Initialisiert die Buttonlistener
 	 */
 	private void initListeners() {
+		//GUI Ansicht wechselt zur CLI Ansicht
 		cliButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				//Konsolenfenster neu aufbereiten
 				console = new JTextArea(PROMPT);
 				console.setFont(new Font("monospaced", Font.PLAIN, 12));
+				//DocumentFilter, damit nur nach dem Prompt Text geändert 
+				//werden darf
 				((AbstractDocument) console.getDocument())
 						.setDocumentFilter(new NonEditableLineDocumentFilter());
+				//Konsole wird als Stdout konfiguriert
 				PrintStream printStream = new PrintStream(
 						new CustomOutputStream(console));
 				System.setOut(printStream);
 				System.setErr(printStream);
+				//alle überflüssigen Komponenten von der Oberfläche entfernen
 				leftPanel.removeAll();
 				centerPanel.removeAll();
 				c.removeAll();
+				//CLI hinzufügen
 				c.add(new JScrollPane(console));
 				revalidate();
 			}
 
 		});
 
+		//Durch Instanzieren eines Ramsesobjekts wird überprüft, ob der 
+		//Programmcode kompilierbar ist
 		compileButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				data = new ArrayList<>();
 				inst = new ArrayList<Instruction>();
+				//Lies die Daten aus der EditorTextArea ein
 				try (Scanner sc = new Scanner(editor.getText())) {
 					sc.useDelimiter("\n");
 					while (sc.hasNext()) {
@@ -276,23 +315,29 @@ public class MyApplet extends JApplet {
 					}
 				}
 				try {
+					//Daten parsen; in Zwischencode umwandeln
 					if (data.size() <= 2)
-						throw new SyntaxErrorException(-2, messages
+						throw new SyntaxErrorException(messages
 								.getString(INVALID_FILE_SIZE));
 					input = Parser.parseInput(data.get(0));
 					output = Parser.parseOutput(data.get(1));
-					for (int i = 0; i < data.size() - 2; i++) {
-						inst.add(Parser.parseInstruction(i, data.get(i + 2)));
-					}
+					data.remove(0);	//remove INPUT Zeile
+					data.remove(0); //remove OUTPUT Zeile
+					inst = Parser.parseInstructions(data);
+					//Neues RAMSES "kompilieren"
 					ramses = new Ramses(input, output, inst);
+					//Eingabefelder für den Benutzer anzeigen
 					fillInputPanel();
+					
 					startButton.setEnabled(true);
 					debugButton.setEnabled(true);
+					setCompiled(true);
 					console.setText(messages.getString(COMPILING_SUCCESSFUL));
 				} catch (SyntaxErrorException | LogicalErrorException e) {
 					inputPanel.removeAll();
 					debugButton.setEnabled(false);
 					startButton.setEnabled(false);
+					setCompiled(false);
 					console.setText(e.toString());
 				} finally {
 					inputPanel.setVisible(false);
@@ -301,15 +346,20 @@ public class MyApplet extends JApplet {
 			}
 		});
 
+		//Startet einen Ramsesthread, welcher bis zur HALT Instruktion 
+		//durchläuft
 		startButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				try {
+					//Konsole auf "null" setzen
 					console.setText("");
+					//Andere Interaktionsmöglichkeiten disablen
 					debugButton.setEnabled(false);
 					compileButton.setEnabled(false);
 					ramses.setDebug(false);
+					//Die Eingabe in den Datenspeicher schreiben
 					for (int i = 1; i < inputPanel.getComponentCount(); i++) {
 						if (inputPanel.getComponent(i) instanceof InputLabel) {
 							InputLabel label = (InputLabel) inputPanel
@@ -322,31 +372,38 @@ public class MyApplet extends JApplet {
 								label.setValue();
 						}
 					}
+					//Neuen Ramsesthread instanziieren und starten
 					ramses = new Ramses(input, output, inst);
 					ramses.start();
 					while (ramses.isLocked()) {
-						// mehr polling als im erblühenden Schwarzwald
+						//warten bis Code ausgeführt ist
 					}
+					//Tabelle im rechten Panel anzeigen
 					createTable();
 					synchronized (ramses) {
 						ramses.notify();
 					}
-					debugButton.setEnabled(true);
-					compileButton.setEnabled(true);
 				} catch (NumberFormatException e) {
-					System.out.println(e + "\t" + messages.getString(VALID_INT)
+					System.out.println(e + "\t" + messages.getString(ERROR_VALID_INT)
 							+ "\n");
 				} catch (LogicalErrorException e) {
 					System.out.println(e);
+				} finally {
+					//Interaktionsmöglichkeiten wieder enablen
+					debugButton.setEnabled(true);
+					compileButton.setEnabled(true);
 				}
 			}
 		});
 
+		//Startet einen Ramsesthread, welcher bis zum angegebenen Breakpoint
+		//läuft und dann auf ein notify() wartet
 		debugButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				try {
+					//Die Eingabe in den Datenspeicher schreiben
 					for (int i = 1; i < inputPanel.getComponentCount(); i++) {
 						if (inputPanel.getComponent(i) instanceof InputLabel) {
 							InputLabel label = (InputLabel) inputPanel
@@ -359,14 +416,20 @@ public class MyApplet extends JApplet {
 								label.setValue();
 						}
 					}
+					//Neuen Ramsesthread instanziieren und starten
 					ramses = new Ramses(input, output, inst);
 					ramses.setDebug(true);
 					ramses.setBreakpoint(breakpoint);
 					ramses.start();
+					//Andere Interaktionen disablen
 					debugButton.setVisible(false);
 					startButton.setVisible(false);
+					//Debuggerfunktionalitäten enablen
 					continueButton.setVisible(true);
 					nextButton.setVisible(true);
+					//Thread wartet bis RAMSES alle Instruktionen bis inkl.
+					//Breakpoint ausgeführt hat und erstellt dann die Tabelle
+					//im rechten Panel des GUI
 					new Thread() {
 						public void run() {
 							while (ramses.isLocked()) {
@@ -375,7 +438,7 @@ public class MyApplet extends JApplet {
 						}
 					}.start();
 				} catch (NumberFormatException e) {
-					System.out.println(e + "\t" + messages.getString(VALID_INT)
+					System.out.println(e + "\t" + messages.getString(ERROR_VALID_INT)
 							+ "\n");
 				} catch (LogicalErrorException e) {
 					System.out.println(e);
@@ -383,14 +446,21 @@ public class MyApplet extends JApplet {
 			}
 		});
 
+		
+		//Setzt den neuen Breakpoint und notified den Ramsesthread
 		continueButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				//Warten bis RAMSES im Unlocked Zustand ist
 				if (!ramses.isLocked()) {
 					synchronized (ramses) {
+						//Neuen Breakpoint setzen und RAMSES weiterlaufen lassen
 						ramses.setBreakpoint(breakpoint);
 						ramses.notify();
+						//Thread wartet bis RAMSES alle Instruktionen bis zum
+						//Breakpoint ausgeführt hat und entnimmt dann die 
+						//Tabelle
 						new Thread() {
 							public void run() {
 								while (ramses.isLocked()) {
@@ -409,14 +479,22 @@ public class MyApplet extends JApplet {
 			}
 		});
 
+		//Setzt den Breakpoint auf "Nächste Instruktion" und notified den 
+		//Ramsesthread
 		nextButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				//Warten bis RAMSES im "Unlocked" Zustand ist
 				if (!ramses.isLocked()) {
 					synchronized (ramses) {
-						ramses.setBreakpoint(-1);
+						//Breakpoint auf nächste Instruktion zeigen lassen und
+						//Ramses weiterlaufen lassen
+						ramses.setBreakpoint(Ramses.NEXT_INST);
 						ramses.notify();
+						//Thread wartet bis RAMSES alle Instruktionen bis zum
+						//Breakpoint ausgeführt hat und entnimmt dann die 
+						//Tabelle
 						new Thread() {
 							public void run() {
 								while (ramses.isLocked()) {
@@ -435,6 +513,7 @@ public class MyApplet extends JApplet {
 			}
 		});
 
+		//Speichert den neuen Breakpoint zum debuggen
 		setBpButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -451,11 +530,14 @@ public class MyApplet extends JApplet {
 		});
 	}
 
+	//----------------------------Methoden-------------------------------------
 	/**
 	 * Erstellt einen JTable anhand der Matrix aus RAMSES
 	 */
 	private void createTable() {
+		//Die Matrix aus dem Ramsesthread erhalten
 		matrix = new ArrayList<>(ramses.getTable());
+		//Tabellenheader entnehmen
 		String[] columnNames = matrix.get(0).toArray(
 				new String[matrix.get(0).size()]);
 		matrix.remove(0);
@@ -465,9 +547,11 @@ public class MyApplet extends JApplet {
 				data[i][j] = matrix.get(i).get(j);
 			}
 		}
+		//Neuen JTable mit aktuellen Daten erstellen
 		table = new JTable(data, columnNames) {
 			private static final long serialVersionUID = 1L;
 
+			//Render konfigurieren für besseres Look and Feel
 			public Component prepareRenderer(TableCellRenderer renderer,
 					int row, int column) {
 				Component c = super.prepareRenderer(renderer, row, column);
@@ -485,7 +569,9 @@ public class MyApplet extends JApplet {
 				return c;
 			}
 		};
+		table.setEnabled(false);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		//Alte Tabelle entfernen und neue hinzufügen
 		rightPanel.removeAll();
 		rightPanel.add(new JScrollPane(table,
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -494,6 +580,11 @@ public class MyApplet extends JApplet {
 		rightPanel.revalidate();
 	}
 
+	/**
+	 * Setzt den neuen Minwert für random Werte
+	 * @param value	neuer Minwert
+	 * @throws LogicalErrorException wenn Min > Max
+	 */
 	private void setMinValue(int value) throws LogicalErrorException {
 		if (value >= maxValue)
 			throw new LogicalErrorException(
@@ -501,6 +592,11 @@ public class MyApplet extends JApplet {
 		minValue = value;
 	}
 
+	/**
+	 * Setzt den neuen Maxwert für random Werte
+	 * @param value	neuer Maxwert
+	 * @throws LogicalErrorException wenn Max < Min
+	 */
 	private void setMaxValue(int value) throws LogicalErrorException {
 		if (value <= minValue)
 			throw new LogicalErrorException(
@@ -508,11 +604,30 @@ public class MyApplet extends JApplet {
 		maxValue = value;
 	}
 
+	/**
+	 * Generiert eine Zufallszahl im Berich minValue - maxValue
+	 * @return Zufallszahl
+	 */
 	private int getRandom() {
 		Random random = new Random();
 		return random.nextInt((maxValue - minValue) + 1) + minValue;
 	}
 
+	public boolean isCompiled() {
+		return compiled;
+	}
+
+	public void setCompiled(boolean compiled) {
+		this.compiled = compiled;
+	}
+
+	//---------------------------Helperclass-----------------------------------
+	/**
+	 * Dokumentfilter, der dafür sorgt das CLI Eigenschaften eingehalten werden,
+	 * z.B. kann nur Text vor dem Eingabeprompt bearbeitet werden
+	 * @author Lukas Becker
+	 * @author Andreas Paul
+	 */
 	private class NonEditableLineDocumentFilter extends DocumentFilter {
 		@Override
 		public void insertString(DocumentFilter.FilterBypass fb, int offset,
@@ -541,11 +656,17 @@ public class MyApplet extends JApplet {
 			Element cur = root.getElement(index);
 			int promptPosition = cur.getStartOffset() + PROMPT.length();
 			if (index == count - 1 && offset - promptPosition >= 0) {
+				//Falls es im Text ein "\n" gab, heißt das, dass eine Eingabe
+				//getätigt wurde
 				if (text.equals("\n")) {
+					//Das Kommando wird ausgelesen
 					String cmd = doc.getText(promptPosition, offset
 							- promptPosition);
+					//Wenn das Kommando leer ist, wird in der Konsole einfach
+					//eine neue Zeile hinzugefügt
 					if (cmd.isEmpty()) {
 						text = "\n";
+						//Ansonsten wird das Kommando geparset
 					} else {
 						parseCmd(cmd);
 					}
@@ -556,34 +677,62 @@ public class MyApplet extends JApplet {
 			}
 		}
 
+		/**
+		 * Parset das eingegebene Kommando in der Konsole
+		 * 
+		 * @param cmd
+		 *            Zu parsende Kommando
+		 */
 		private void parseCmd(String cmd) {
 			try {
-				if (cmd.matches(CMD_GUI)) {
-					c.removeAll();
-					((AbstractDocument) console.getDocument())
-							.setDocumentFilter(null);
-					console.setText("");
-					initLeftPanel();
-					initCenterPanel();
-					fillInputPanel();
-					c.add(leftPanel);
-					c.add(centerPanel);
-					c.add(rightPanel);
-					if (ramses != null){
-						startButton.setEnabled(true);
-						debugButton.setEnabled(true);
-					}
-					c.setVisible(false);
-					c.setVisible(true);
-				} else if (cmd.matches(CMD_COMPILE)) {
+				if (cmd.matches(CMD_GUI)) {// Wechsel zur GUI Ansicht
+					new Thread() {
+						public void run() {
+							c.removeAll();
+							((AbstractDocument) console.getDocument())
+									.setDocumentFilter(null);
+							console.setText("");
+							initLeftPanel();
+							initCenterPanel();
+							fillInputPanel();
+							c.add(leftPanel);
+							c.add(centerPanel);
+							c.add(rightPanel);
+							if (isCompiled()) {
+								startButton.setEnabled(true);
+								debugButton.setEnabled(true);
+							}
+							c.setVisible(false);
+							c.setVisible(true);
+
+						}
+					}.start();
+				} else if (cmd.matches(CMD_COMPILE)) {// Kompiliere die Datei
 					compile(cmd);
-				} else if (cmd.matches(CMD_CLEAR)) {
-					((AbstractDocument) console.getDocument())
-							.setDocumentFilter(null);
-					console.setText(PROMPT);
-					((AbstractDocument) console.getDocument())
-							.setDocumentFilter(new NonEditableLineDocumentFilter());
-				} else if (cmd.matches(CMD_RUN)) {
+				} else if (cmd.matches(CMD_WRONG_COMPILE)) {
+					throw new LogicalErrorException(messages.getString(
+							ERROR_WRONG_COMPILE_FORMAT));
+				} else if (cmd.matches(CMD_CLEAR)) {//Clear die Konsole
+					new Thread() {
+						public void run() {
+							// der Documentfilter verhindert ein einfaches
+							// clear,
+							// deshalb erst den Documentfilter auf null setzen
+							((AbstractDocument) console.getDocument())
+									.setDocumentFilter(null);
+							console.setText(PROMPT);
+							((AbstractDocument) console.getDocument())
+									.setDocumentFilter(new 
+											NonEditableLineDocumentFilter());
+							console.setCaretPosition(PROMPT.length());
+						}
+					}.start();
+				} else if (cmd.matches(CMD_RUN)) {//Führe das RAM Programm aus
+					if(!isCompiled())
+						throw new LogicalErrorException(messages.getString(
+								ERROR_NO_COMPILED_PROG));
+					//Bei run ohne Eingabeparameter werden die benötigten 
+					//Parameter zufällig gewählt
 					if (cmd.equals("run")) {
 						for (int i = 0; i < input.length; i++) {
 							input[i].setValue(getRandom());
@@ -598,11 +747,13 @@ public class MyApplet extends JApplet {
 							}
 							if (i < input.length)
 								throw new LogicalErrorException(
-										messages.getString(ERROR_NOT_ALL_INPUT_SET));
+										messages.getString
+										(ERROR_NOT_ALL_INPUT_SET));
 						}
 					}
 					run();
-				} else if (cmd.matches(CMD_MIN)) {
+				} else if (cmd.matches(CMD_MIN)) { 
+					//Setze Min oder erfahre Minwert
 					if (cmd.equals("min"))
 						System.out.println("min = " + minValue);
 					else {
@@ -610,13 +761,14 @@ public class MyApplet extends JApplet {
 						setMinValue(Integer.parseInt(cmd));
 					}
 				} else if (cmd.matches(CMD_MAX)) {
+					//Setze Max oder erfahre Maxwert
 					if (cmd.equals("max"))
 						System.out.println("max = " + maxValue);
 					else {
 						cmd = cmd.replace("max ", "");
 						setMaxValue(Integer.parseInt(cmd));
 					}
-				} else if (cmd.matches(CMD_HELP)) {
+				} else if (cmd.matches(CMD_HELP)) {//Gibt Hilfeanzeige aus
 					System.out.println(messages.getString(CLI_HELP_TEXT));
 				}
 			} catch (NumberFormatException | LogicalErrorException e) {
@@ -624,6 +776,9 @@ public class MyApplet extends JApplet {
 			}
 		}
 
+		/**
+		 * Instanziert neues Ramsesobjekt und startet den Thread
+		 */
 		private void run() {
 			try {
 				ramses.setDebug(false);
@@ -638,18 +793,16 @@ public class MyApplet extends JApplet {
 									ramses.notify();
 								}
 								for (int i = 0; i < matrix.size(); i++) {
-									// String s = "\n";
-									for (int j = 0; j < matrix.get(0).size(); j++) {
+									for (int j = 0; j < matrix.get(0).size(); 
+											j++) {
 										System.out
 												.print(String.format("%-25s|",
 														matrix.get(i).get(j)));
-										// s += "--------------------------";
 									}
-									System.out.println();// s);
+									System.out.println();
 								}
 								return;
 							}
-							
 						}
 					}
 				}.start();
@@ -659,6 +812,11 @@ public class MyApplet extends JApplet {
 			}
 		}
 
+		/**
+		 * Kompiliert die Datei die im mitgegebenen Pfad gespeichert ist
+		 * 
+		 * @param cmd  "compile DATEIPFAD"
+		 */
 		private void compile(String cmd) {
 			data = new ArrayList<>();
 			inst = new ArrayList<Instruction>();
@@ -669,20 +827,17 @@ public class MyApplet extends JApplet {
 				while (br.ready()) {
 					data.add(br.readLine());
 				}
-			} catch (IOException e) {
-				System.out.println(e);
-			}
-			try {
 				input = Parser.parseInput(data.get(0));
 				output = Parser.parseOutput(data.get(1));
-				for (int i = 0; i < data.size() - 2; i++) {
-					inst.add(Parser.parseInstruction(i, data.get(i + 2)));
-				}
+				data.remove(0);	//remove INPUT Zeile
+				data.remove(0); //remove OUTPUT Zeile
+				inst = Parser.parseInstructions(data);
 				ramses = new Ramses(input, output, inst);
+				setCompiled(true);
 				System.out.println(messages.getString(COMPILING_SUCCESSFUL));
-			} catch (SyntaxErrorException e) {
-				System.out.println(e);
-			} catch (LogicalErrorException e) {
+			} catch (SyntaxErrorException | LogicalErrorException |
+					IOException e) {
+				setCompiled(false);
 				System.out.println(e);
 			}
 		}

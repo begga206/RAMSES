@@ -4,12 +4,26 @@ import java.awt.Checkbox;
 
 import javax.swing.*;
 
+/**
+ * GUI Darstellung eines Input-Objekts
+ * @author Lukas Becker
+ * @author Andreas Paul
+ *
+ */
 public class InputLabel extends JPanel {
 	private static final long serialVersionUID = 1L;
+	
+	/** Eigentliche Input-Objekt */
 	private Input input;
+	/** Im Textfeld kann ein Wert für das Input-Objekt eingetragen werden*/
 	private JTextField tf;
+	/** Wenn gecheckt, soll ein Randomwert als input eingetragen werden*/
 	private Checkbox random;
 	
+	/**
+	 * Konstruktor
+	 * @param in Darzustellende Input-Objekt
+	 */
 	public InputLabel(Input in){
 		super();
 		tf = new JTextField(10);
@@ -22,6 +36,7 @@ public class InputLabel extends JPanel {
 		this.add(random);
 	}
 	
+	//-------------------------Getter und Setter-------------------------------
 	public void setValue(){
 		input.setValue(Integer.parseInt(tf.getText()));
 	}

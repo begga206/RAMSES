@@ -19,16 +19,19 @@ public class Parser {
 
 	// ERROR MESSAGES//
 	public static final String ERROR_EXCPECTED_COLON = "ERROR_EXCPECTED_COLON";
-	public static final String ERROR_INSTPTR_CONTAINS_LETTER = "ERROR_INSTPTR_CONTAINS_LETTER";
+	public static final String ERROR_INSTPTR_CONTAINS_LETTER = 
+			"ERROR_INSTPTR_CONTAINS_LETTER";
 	public static final String ERROR_INST_UNKNOWN = "ERROR_INST_UNKNOWN";
 	public static final String ERROR_WRONG_INSPTR = "ERROR_WRONG_INSPTR";
 	public static final String ERROR_WRONG_FORMAT = "ERROR_WRONG_FORMAT";
-	public static final String ERROR_INVALID_OPERATOR = "ERROR_INVALID_OPERATOR";
+	public static final String ERROR_INVALID_OPERATOR = 
+			"ERROR_INVALID_OPERATOR";
 	public static final String ERROR_INPUT_KEYWORD = "ERROR_INPUT_KEYWORD";
 	public static final String ERROR_INPUT_FORMAT = "ERROR_INPUT_FORMAT";
 	public static final String ERROR_OUTPUT_KEYWORD = "ERROR_OUTPUT_KEYWORD";
 	public static final String ERROR_OUTPUT_FORMAT = "ERROR_OUTPUT_FORMAT";
-	public static final String ERROR_INDEX_DEST_NE_OP1 = "ERROR_INDEX_DEST_NE_OP1";
+	public static final String ERROR_INDEX_DEST_NE_OP1 = 
+			"ERROR_INDEX_DEST_NE_OP1";
 	public static final String ERROR_WRONG_IP = "ERROR_WRONG_IP";
 
 	// CASES//
@@ -67,16 +70,16 @@ public class Parser {
 	// PATTERN//
 	public static final String PATTERN_LOAD_INST = 
 			"\\d+: (a|i\\d*|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]) "
-			+ "<- (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]|a|i\\d*)";
-	public static final String PATTERN_JUMP_INST = "\\d+: jump \\d+";
+			+ "<- (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]|a|i\\d*)\\s*";
+	public static final String PATTERN_JUMP_INST = "\\d+: jump \\d+\\s*";
 	public static final String PATTERN_COND_JUMP_INST = 
-			"\\d+: if (a|i\\d*) (=|!=|<=|>=|<|>) 0 then jump \\d+";
+			"\\d+: if (a|i\\d*) (=|!=|<=|>=|<|>) 0 then jump \\d+\\s*";
 	public static final String PATTERN_ARITH_INST = 
 			"\\d+: a <- a (\\+|\\-|\\*|div|mod) "
-			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])";
-	public static final String PATTERN_HALT_INST = "\\d+: HALT";
+			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])\\s*";
+	public static final String PATTERN_HALT_INST = "\\d+: HALT\\s*";
 	public static final String PATTERN_INDEX_INST = 
-			"\\d+: i\\d* <- i\\d* (\\+|\\-) 1";
+			"\\d+: i\\d* <- i\\d* (\\+|\\-) 1\\s*";
 	public static final String PATTERN_AKKU = "a";
 	public static final String PATTERN_IMM = "\\d+";
 	public static final String PATTERN_INDEX = "i\\d*";
@@ -91,36 +94,36 @@ public class Parser {
 
 	// SYNTAX ERROR PATTERN//
 	public static final String PATTERN_NO_DEST_REG = 
-			"\\d+: <- (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]|a|i\\d*)";
-	public static final String PATTERN_IMM_DEST_REG = "\\d+: \\d+ <- (.)*";
+			"\\d+: <- (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]|a|i\\d*)\\s*";
+	public static final String PATTERN_IMM_DEST_REG = "\\d+: \\d+ <- (.)*\\s*";
 	public static final String PATTERN_UNKNOWN_OPERATOR = "\\d+: a <- a (.)* "
-			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])";
+			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])\\s*";
 	public static final String PATTERN_NO_FIRST_OPERAND = 
 			"\\d+: a <- (\\+|\\-|\\*|div|mod) "
-			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])";
+			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])\\s*";
 	public static final String PATTERN_NO_SECOND_OPERAND = 
 			"\\d+: a <- a (\\+|\\-|\\*|div|mod)\\s*";
 	public static final String PATTERN_NO_IP = "\\D(.)*";
 	public static final String PATTERN_LD_MEM_IMM = 
-			"\\d+: s\\[(\\d+|i\\d*(\\+\\d+)*)\\] <- \\d+";
+			"\\d+: s\\[(\\d+|i\\d*(\\+\\d+)*)\\] <- \\d+\\s*";
 	public static final String PATTERN_LD_MEM_MEM = "\\d+: (" + PATTERN_MEM
 			+ "|" + PATTERN_MMEM + ") <- (" + PATTERN_MEM + "|" + PATTERN_MMEM
-			+ ")";
+			+ ")\\s*";
 	public static final String PATTERN_LD_I_MMEM = "\\d+: " + PATTERN_INDEX
-			+ " <- " + PATTERN_MMEM;
+			+ " <- " + PATTERN_MMEM + "\\s*";
 	public static final String PATTEN_LD_REG_REG = "\\d+: " + PATTERN_REG
-			+ " <- " + PATTERN_REG;
-	public static final String PATTERN_FORGOT_COLON = "\\d+ (.)*";
+			+ " <- " + PATTERN_REG + "\\s*";
+	public static final String PATTERN_FORGOT_COLON = "\\d+ (.)*\\s*";
 	public static final String PATTERN_NO_THEN = "\\d+: if (a|i\\d*) "
-			+ "(=|!=|<=|>=|<|>) 0 jump \\d+";
+			+ "(=|!=|<=|>=|<|>) 0 jump \\d+\\s*";
 	public static final String PATTERN_IF_NOT_NULL = "\\d+: if (a|i\\d*) "
-			+ "(=|!=|<=|>=|<|>) [^0] then jump \\d+";
+			+ "(=|!=|<=|>=|<|>) [^0] then jump \\d+\\s*";
 	public static final String PATTERN_IF_UNKNWN_OP = "\\d+: if (a|i\\d*) "
-			+ ".* 0 then jump \\d+";
+			+ ".* 0 then jump \\d+\\s*";
 	public static final String PATTERN_INDEX_UNKWN_OP = 
-			"\\d+: i\\d* <- i\\d* [^(\\+|\\-)] \\d+";
+			"\\d+: i\\d* <- i\\d* [^(\\+|\\-)] \\d+\\s*";
 	public static final String PATTERN_INDEX_OP2_NOT_ONE = 
-			"\\d+: i\\d* <- i\\d* (\\+|\\-) \\d+";
+			"\\d+: i\\d* <- i\\d* (\\+|\\-) \\d+\\s*";
 
 	// SYNTAX ERROR MELDUNGEN ZU OBEN STEHENDEN PATTERN//
 	public static final String ERROR_PATTERN_NO_DEST_REG = 
@@ -166,7 +169,7 @@ public class Parser {
 	 * 
 	 * @param inputLine
 	 * @return Array mit den verschiedenen Inputregistern
-	 * @throws SyntaxErrorException
+	 * @throws SyntaxErrorException bei einem syntaktischen der Zeile
 	 */
 	public static Input[] parseInput(String inputLine)
 			throws SyntaxErrorException {
@@ -223,7 +226,7 @@ public class Parser {
 	 * 
 	 * @param outputLine
 	 * @return Array mit den Indexen des Speicherregisters
-	 * @throws SyntaxErrorException
+	 * @throws SyntaxErrorException bei einem syntaktischen der Zeile
 	 */
 	public static int[] parseOutput(String outputLine)
 			throws SyntaxErrorException {
@@ -252,7 +255,7 @@ public class Parser {
 				int from = parseOperand(s[0]);
 				int till = parseOperand(s[1]);
 
-				for (int i = from; i < till; i++) {
+				for (int i = from; i <= till; i++) {
 					output.add(i);
 				}
 			} else
@@ -269,12 +272,12 @@ public class Parser {
 	}
 
 	/**
-	 * Hauptfunktion zum Parsen der Befehlszeile
+	 * Parst eine Instruktionszeile in ein Instruction-Objekt
 	 * 
 	 * @param instPtr
 	 * @param instLine
 	 * @return Instruktionsobjekt, was der Befehlszeile entspricht
-	 * @throws SyntaxErrorException
+	 * @throws SyntaxErrorException bei einem syntaktischen der Zeile
 	 */
 	public static Instruction parseInstruction(int instPtr, String instLine)
 			throws SyntaxErrorException {
@@ -307,13 +310,26 @@ public class Parser {
 				messages.getString(ERROR_WRONG_FORMAT));
 	}
 	
-	public static ArrayList<Instruction> parseInstructions(ArrayList<String> instLines) throws SyntaxErrorException, LogicalErrorException{
+	/**
+	 * Parst mehrere Instruktionen und gibt diese dann in einer Arraylsite aus
+	 * Instruction-Objekten zurück.
+	 * @param instLines	Arrayliste der Instruktionszeilen
+	 * @return Arrayliste mit Instruction-Objekten aus den geparsten Zeilen
+	 * @throws SyntaxErrorException bei einem syntaktischen Fehler einer Zeile
+	 * @throws LogicalErrorException bei logischem Fehler im Kontext der 
+	 * gegebenen Zeilen
+	 */
+	public static ArrayList<Instruction> parseInstructions(
+			ArrayList<String> instLines) 
+					throws SyntaxErrorException, LogicalErrorException{
 		ArrayList<Instruction> instructions = new ArrayList<>();
 		for(int i = 0; i < instLines.size(); i++){
-			parseInstruction(i ,instLines.get(i));
-			String iP = instLines.get(i).substring(0, instLines.get(i).indexOf(":"));
+			instructions.add(parseInstruction(i ,instLines.get(i)));
+			String iP = instLines.get(i).substring(0, 
+					instLines.get(i).indexOf(":"));
 			if(Integer.parseInt(iP) != i)
-				throw new LogicalErrorException(i, messages.getString(ERROR_WRONG_IP) + iP);
+				throw new LogicalErrorException(i, messages.
+						getString(ERROR_WRONG_IP) + iP);
 		}
 		return instructions;
 	}
@@ -323,7 +339,7 @@ public class Parser {
 	 * beschreiben. Wenn ein Muster passend ist, wird die entsprechende
 	 * Fehlermeldung geworfen.
 	 * @param instLine
-	 * @throws SyntaxErrorException
+	 * @throws SyntaxErrorException bei einem syntaktischen der Zeile
 	 */
 	private static void checkForSyntaxErrors(String instLine)
 			throws SyntaxErrorException {
@@ -369,9 +385,9 @@ public class Parser {
 	 * Parsfunktion, wenn Befehlszeile ein bedingter Sprung ist
 	 * 
 	 * @param instLine
-	 * @param tokens
+	 * @param tokens Tokinisierte Form der Instruktionszeile
 	 * @return Instruktionsobjekt, was der Befehlszeile entspricht
-	 * @throws SyntaxErrorException
+	 * @throws SyntaxErrorException bei einem syntaktischen der Zeile
 	 */
 	private static Instruction parseCondJump(String instLine,
 			ArrayList<String> tokens) throws SyntaxErrorException {
@@ -403,9 +419,9 @@ public class Parser {
 	 * Parsfunktion, wenn die Befehlszeile ein Arithmetikbefehl ist
 	 * 
 	 * @param instLine
-	 * @param tokens
+	 * @param tokens Tokinisierte Form der Instruktionszeile
 	 * @return Instruktionsobjekt, was der Befehlszeile entspricht
-	 * @throws SyntaxErrorException
+	 * @throws SyntaxErrorException bei einem syntaktischen der Zeile
 	 */
 	private static Instruction parseArithInst(String instLine,
 			ArrayList<String> tokens) throws SyntaxErrorException {
@@ -462,9 +478,9 @@ public class Parser {
 	 * Parsfunktion, wenn die Befehlszeile ein Transportbefehl ist
 	 * 
 	 * @param instLine
-	 * @param tokens
+	 * @param tokens Tokinisierte Form der Instruktionszeile
 	 * @return Instruktionsobjekt, was der Befehlszeile entspricht
-	 * @throws SyntaxErrorException
+	 * @throws SyntaxErrorException bei einem syntaktischen der Zeile
 	 */
 	private static Instruction parseLoadInst(String instLine,
 			ArrayList<String> tokens) throws SyntaxErrorException {
@@ -509,9 +525,9 @@ public class Parser {
 	 * Parsfunktion, wenn die Befehlszeile ein Indexbefehl ist
 	 * 
 	 * @param instLine
-	 * @param tokens
+	 * @param tokens Tokinisierte Form der Instruktionszeile
 	 * @return Instruktionsobjekt, was der Befehlszeile entspricht
-	 * @throws SyntaxErrorException
+	 * @throws SyntaxErrorException bei einem syntaktischen der Zeile
 	 */
 	private static Instruction parseIndexInst(String instLine,
 			ArrayList<String> tokens) throws SyntaxErrorException {
@@ -539,9 +555,9 @@ public class Parser {
 	/**
 	 * Parsfunktion zum parsen eines modifizierten Speichers
 	 * 
-	 * @param token
+	 * @param token Bestimmter Token aus der Befehlszeile
 	 * @return Instruktionsobjekt, was der Befehlszeile entspricht
-	 * @throws SyntaxErrorException
+	 * @throws SyntaxErrorException bei einem syntaktischen der Zeile
 	 */
 	private static int[] parseMMEM(String token) throws SyntaxErrorException {
 		int[] ops = new int[2];
@@ -560,9 +576,9 @@ public class Parser {
 	/**
 	 * Parsfunktion zum Parsen von allen möglichen Operanden (außer MMEM)
 	 * 
-	 * @param token
+	 * @param token Bestimmter Token aus der Befehlszeile
 	 * @return Instruktionsobjekt, was der Befehlszeile entspricht
-	 * @throws SyntaxErrorException
+	 * @throws SyntaxErrorException bei einem syntaktischen der Zeile
 	 */
 	private static int parseOperand(String token) throws SyntaxErrorException {
 		int op;
