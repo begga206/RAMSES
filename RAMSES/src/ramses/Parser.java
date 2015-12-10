@@ -70,16 +70,16 @@ public class Parser {
 	// PATTERN//
 	public static final String PATTERN_LOAD_INST = 
 			"\\d+: (a|i\\d*|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]) "
-			+ "<- (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]|a|i\\d*)\\s*";
-	public static final String PATTERN_JUMP_INST = "\\d+: jump \\d+\\s*";
+			+ "<- (\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\]|a|i\\d*)\\s*(//.*)*";
+	public static final String PATTERN_JUMP_INST = "\\d+: jump \\d+\\s*(//.*)*";
 	public static final String PATTERN_COND_JUMP_INST = 
-			"\\d+: if (a|i\\d*) (=|!=|<=|>=|<|>) 0 then jump \\d+\\s*";
+			"\\d+: if (a|i\\d*) (=|!=|<=|>=|<|>) 0 then jump \\d+\\s*(//.*)*";
 	public static final String PATTERN_ARITH_INST = 
 			"\\d+: a <- a (\\+|\\-|\\*|div|mod) "
-			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])\\s*";
-	public static final String PATTERN_HALT_INST = "\\d+: HALT\\s*";
+			+ "(\\d+|s\\[(i\\d*(\\+\\d+)*|\\d+)\\])\\s*(//)*.*";
+	public static final String PATTERN_HALT_INST = "\\d+: HALT\\s*(//.*)*";
 	public static final String PATTERN_INDEX_INST = 
-			"\\d+: i\\d* <- i\\d* (\\+|\\-) 1\\s*";
+			"\\d+: i\\d* <- i\\d* (\\+|\\-) 1\\s*(//.*)*";
 	public static final String PATTERN_AKKU = "a";
 	public static final String PATTERN_IMM = "\\d+";
 	public static final String PATTERN_INDEX = "i\\d*";

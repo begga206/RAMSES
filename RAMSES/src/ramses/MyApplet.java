@@ -60,6 +60,7 @@ public class MyApplet extends JApplet {
 
 	//------------------CLI Kommandos/Prompt/Nachrichten-----------------------
 	public static final String PROMPT = "RAMSES> ";
+	public static final String CLI_WELCOME_TEXT = "CLI_WELCOME_TEXT";
 	public static final String CLI_HELP_TEXT = "CLI_HELP_TEXT";
 	public static final String CMD_GUI = "gui";
 	public static final String CMD_COMPILE = "compile .+\\.txt";
@@ -170,6 +171,7 @@ public class MyApplet extends JApplet {
 		//Das Applet befindet sich Anfangs im CLI, also nur die Konsole zur 
 		//ContentPane adden
 		c.add(new JScrollPane(console));
+		System.out.println(messages.getString(CLI_WELCOME_TEXT));
 	}
 
 	/**
@@ -195,7 +197,7 @@ public class MyApplet extends JApplet {
 		leftPanel.add(new JScrollPane(editor));
 		leftPanel.add(new JLabel(messages.getString(CONSOLE)));
 		leftPanel.add(new JScrollPane(console));
-		leftPanel.add(buttonPanel);
+		leftPanel.add(new JScrollPane(buttonPanel));
 	}
 
 	/**
@@ -294,6 +296,7 @@ public class MyApplet extends JApplet {
 				c.removeAll();
 				//CLI hinzufügen
 				c.add(new JScrollPane(console));
+				System.out.println(messages.getString(CLI_WELCOME_TEXT));
 				revalidate();
 			}
 
