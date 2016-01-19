@@ -111,8 +111,6 @@ public class Parser {
 			+ ")\\s*";
 	public static final String PATTERN_LD_I_MMEM = "\\d+: " + PATTERN_INDEX
 			+ " <- " + PATTERN_MMEM + "\\s*";
-	public static final String PATTEN_LD_REG_REG = "\\d+: " + PATTERN_REG
-			+ " <- " + PATTERN_REG + "\\s*";
 	public static final String PATTERN_FORGOT_COLON = "\\d+ (.)*\\s*";
 	public static final String PATTERN_NO_THEN = "\\d+: if (a|i\\d*) "
 			+ "(=|!=|<=|>=|<|>) 0 jump \\d+\\s*";
@@ -143,8 +141,6 @@ public class Parser {
 			"ERROR_PATTERN_LD_MEM_MEM";
 	public static final String ERROR_PATTERN_LD_I_MMEM = 
 			"ERROR_PATTERN_LD_I_MMEM";
-	public static final String ERROR_PATTEN_LD_REG_REG = 
-			"ERROR_PATTEN_LD_REG_REG";
 	public static final String ERROR_PATTERN_FORGOT_COLON = 
 			"ERROR_PATTERN_FORGOT_COLON";
 	public static final String ERROR_PATTERN_NO_THEN = "ERROR_PATTERN_NO_THEN";
@@ -493,9 +489,6 @@ public class Parser {
 		if (instLine.matches(PATTERN_LD_I_MMEM))
 			throw new SyntaxErrorException(instPtr,
 					messages.getString(ERROR_PATTERN_LD_I_MMEM));
-		if (instLine.matches(PATTEN_LD_REG_REG))
-			throw new SyntaxErrorException(instPtr,
-					messages.getString(ERROR_PATTEN_LD_REG_REG));
 		
 		String dest = tokens.get(INDEX_DESTINATION);
 		String op1 = tokens.get(INDEX_OP1);
@@ -517,6 +510,8 @@ public class Parser {
 			return new Instruction(InstructionTag.LD_REG_MEM, p[0], p[1]);
 		if (dest.matches(PATTERN_MEM) && op1.matches(PATTERN_REG))
 			return new Instruction(InstructionTag.LD_MEM_REG, p[0], p[1]);
+		if (dest.matches(PATTERN_REG) && op1.matches(PATTERN_REG))
+			return new Instruction(InstructionTag.LD_REG_REG, p[0], p[1]);
 		throw new SyntaxErrorException(instPtr,
 				messages.getString(ERROR_WRONG_FORMAT));
 	}

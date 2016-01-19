@@ -252,6 +252,9 @@ public class Ramses extends Thread {
 			case LD_REG_MEM:
 				ldRegMem(inst);
 				break;
+			case LD_REG_REG:
+				ldRegReg(inst);
+				break;
 			case MOD_A_IMM:
 				modAImm(inst);
 				break;
@@ -681,6 +684,43 @@ public class Ramses extends Thread {
 		out = p.indexOf(inst) + ": " + reg + " <- " + mem;
 		addRow(out);
 		fillTable(reg, regValue);
+	}
+	
+	private void ldRegReg(Instruction inst) throws LogicalErrorException {
+		if (inst.getP0() < -1 || inst.getP0() > i.length)
+			throw new LogicalErrorException(p.indexOf(inst),
+					messages.getString(ERROR_INDEX_OUT_OF_BOUNDS));
+		String out;
+		String regFrom;
+		String regTo;
+		String regToValue;
+		if (inst.getP0() == -1) {
+			regTo = "a";
+			if(inst.getP1() == -1){
+				isAInit();
+				regFrom = "a";
+			}else{
+				isIInit(inst.getP1());
+				a = i[inst.getP1()];
+				regFrom = "i" + inst.getP0();
+			}
+			regToValue = Integer.toString(a);
+		}else{
+			regTo = "i"+ Integer.toString(inst.getP0());
+			if(inst.getP1() == -1){
+				isAInit();
+				regFrom = "a";
+				i[inst.getP0()] = a;
+			}else{
+				isIInit(inst.getP1());
+				i[inst.getP0()] = i[inst.getP1()];
+				regFrom = "i" + inst.getP0();
+			}
+			regToValue = Integer.toString(i[inst.getP0()]);
+		}
+		out = p.indexOf(inst) + ": " + regTo + " <- " + regFrom;
+		addRow(out);
+		fillTable(regTo, regToValue);
 	}
 
 	/**

@@ -10,6 +10,7 @@ public enum InstructionTag {
 	//Transportbefehle
 	LD_REG_IMM,	//reg <- imm
 	LD_REG_MEM,	//reg <- mem
+	LD_REG_REG, //reg <- reg
 	LD_A_MMEM,	//a <- mmem
 	LD_MEM_REG,	//mem <- reg
 	LD_MMEM_A,	//mmem <- a
