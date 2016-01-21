@@ -52,6 +52,7 @@ public enum InstructionTag {
 		switch(this){
 			case LD_REG_IMM : return "LD_REG_IMM";
 			case LD_REG_MEM : return "LD_REG_MEM";
+			case LD_REG_REG : return "LD_REG_REG";
 			case LD_A_MMEM  : return "LD_A_MMEM";
 			case LD_MEM_REG : return "LD_MEM_REG";
 			case LD_MMEM_A  : return "LD_MMEM_A";

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javax.rmi.CORBA.Util;
+
 /**
  * Ramsesklasse emuliert eine RAM
  * 
@@ -702,7 +704,7 @@ public class Ramses extends Thread {
 			}else{
 				isIInit(inst.getP1());
 				a = i[inst.getP1()];
-				regFrom = "i" + inst.getP0();
+				regFrom = "i" + inst.getP1();
 			}
 			regToValue = Integer.toString(a);
 		}else{
@@ -714,7 +716,7 @@ public class Ramses extends Thread {
 			}else{
 				isIInit(inst.getP1());
 				i[inst.getP0()] = i[inst.getP1()];
-				regFrom = "i" + inst.getP0();
+				regFrom = "i" + inst.getP1();
 			}
 			regToValue = Integer.toString(i[inst.getP0()]);
 		}
@@ -750,9 +752,17 @@ public class Ramses extends Thread {
 	 * @throws LogicalErrorException
 	 */
 	private void ldMemReg(Instruction inst) throws LogicalErrorException {
+		if(inst.getP0() < -1)
+			throw new LogicalErrorException(ERROR_INDEX_OUT_OF_BOUNDS);
+		if(inst.getP0() >= s.length){
+			Integer[] tmp = new Integer[inst.getP0()+1];
+			System.arraycopy(s, 0, tmp, 0, s.length);
+			s = tmp;
+		}
 		String out;
 		String reg = null;
 		String mem = "s[" + inst.getP0() + "]";
+		
 		if (inst.getP1() == -1) {
 			isAInit();
 			s[inst.getP0()] = a;
@@ -779,11 +789,17 @@ public class Ramses extends Thread {
 	private void ldMmemA(Instruction inst) throws LogicalErrorException {
 		isAInit();
 		if (inst.getP0() >= 0 && inst.getP0() < i.length) {
+			if(i[inst.getP0()] + inst.getP1() >= s.length){
+				Integer[] tmp = new Integer[i[inst.getP0()]+inst.getP1()];
+				System.arraycopy(s, 0, tmp, 0, s.length);
+				s = tmp;
+			}
 			s[i[inst.getP0()] + inst.getP1()] = a;
 			String out = p.indexOf(inst) + ": s[i" + inst.getP0() + "+"
 					+ inst.getP1() + "] <- a";
 			addRow(out);
-			fillTable("s[i" + inst.getP0() + "+" + inst.getP1() + "]",
+			Integer tmp = i[inst.getP0()] + inst.getP1();
+			fillTable("s[" + tmp + "]",
 					Integer.toString(s[i[inst.getP0()] + inst.getP1()]));
 		} else
 			throw new LogicalErrorException(p.indexOf(inst),

@@ -172,6 +172,10 @@ public class Parser {
 		ArrayList<Input> input = new ArrayList<>();
 		ArrayList<String> tokens = new ArrayList<>();
 		
+		if(inputLine.contains("//")){
+			inputLine = inputLine.substring(0, inputLine.indexOf("/"));
+		}
+		
 		Scanner sc = new Scanner(inputLine);
 		//Überprüfen, ob String zu dem INPUT Muster passt
 		if (!sc.next().matches(PATTERN_INPUT_KEYWORD)) {
@@ -228,6 +232,10 @@ public class Parser {
 			throws SyntaxErrorException {
 		ArrayList<Integer> output = new ArrayList<>();
 		ArrayList<String> tokens = new ArrayList<>();
+		
+		if(outputLine.contains("//")){
+			outputLine = outputLine.substring(0,outputLine.indexOf("/"));
+		}
 		
 		Scanner sc = new Scanner(outputLine);
 		//Überprüfen, ob String zum OUTPUT Muster passt
